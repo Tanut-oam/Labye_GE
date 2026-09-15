@@ -9,8 +9,13 @@
 ## สแตก
 
 HTML + CSS + JavaScript ล้วน ไม่มี build step ไม่มีเฟรมเวิร์ก
-ใช้ Firebase (Authentication + Cloud Firestore) ผ่าน ES module จาก CDN
+ใช้ Supabase (Auth + Postgres + Row Level Security) ผ่าน supabase-js
+ที่ import จาก CDN (jsdelivr +esm) แบบ ES module
 deploy เป็นเว็บ static บน Netlify
+
+schema ฐานข้อมูลและ RLS ทั้งหมดอยู่ใน `supabase/schema.sql` (แหล่งความจริงเดียว)
+ตัวนับ like_count/comment_count ดูแลด้วย trigger ฝั่ง DB อย่าไปนับ/อัปเดตจาก client
+ชื่อคอลัมน์ใน DB เป็น snake_case (user_id, created_at, like_count, comments_open)
 
 ถ้าจะเพิ่มอะไร ให้คงสไตล์นี้ไว้ อย่าเพิ่ม npm package หรือ bundler
 เว้นแต่จะคุยกันก่อน
@@ -47,6 +52,6 @@ deploy เป็นเว็บ static บน Netlify
 - `assets/js/data.js` ข้อความแบบวัด 20 ข้อยังเป็นตัวอย่าง ต้องใส่ฉบับจริง
   พร้อมเกณฑ์แปลผลของแบบวัดนั้น ตอนนี้เกณฑ์ 40/60/80 เป็นค่าเดา
 - `assets/js/moderation.js` รายการคำยังสั้นมาก ต้องขยาย
-- `assets/js/firebase-config.js` ยังเป็นค่าตัวอย่าง
+- `assets/js/supabase-config.js` ยังเป็นค่าตัวอย่าง (ต้องใส่ Project URL + anon key)
 - ยังไม่มีหน้าสำหรับทำแบบวัด post-test ที่เข้าถึงจากกระดาน
 - ยังไม่มีสคริปต์ export ข้อมูลไปวิเคราะห์

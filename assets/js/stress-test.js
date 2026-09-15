@@ -1,13 +1,10 @@
 // แบบวัดความเครียด 20 ข้อ ทีละข้อ
 // รับพารามิเตอร์ phase จาก URL  pre = ก่อนใช้เว็บ  post = หลังครบระยะทดลอง
 
-import { db } from "./firebase-config.js";
+import { supabase } from "./supabase-config.js";
 import { requireAuth } from "./guard.js";
 import { QUESTIONS } from "./data.js";
 import { setMsg } from "./ui.js";
-import {
-  collection, addDoc, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const phase = new URLSearchParams(location.search).get("phase") === "post" ? "post" : "pre";
 
@@ -45,20 +42,19 @@ async function finish() {
   const total = answers.reduce((a, b) => a + b, 0);
   el.next.disabled = true;
   setMsg("msg", "กำลังบันทึกคำตอบ…", true);
-  try {
-    await addDoc(collection(db, "stressTests"), {
-      uid: user.uid,
-      phase,
-      total,
-      answers,
-      createdAt: serverTimestamp()
-    });
-    location.href = `stress-result.html?score=${total}`;
-  } catch (e) {
-    console.error(e);
+  const { error } = await supabase.from("stress_tests").insert({
+    user_id: user.id,
+    phase,
+    total,
+    answers
+  });
+  if (error) {
+    console.error(error);
     setMsg("msg", "บันทึกไม่สำเร็จ ลองกดอีกครั้ง");
     el.next.disabled = false;
+    return;
   }
+  location.href = `stress-result.html?score=${total}`;
 }
 
 el.next.addEventListener("click", () => {

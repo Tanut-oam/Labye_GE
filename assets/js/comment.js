@@ -1,13 +1,9 @@
 // โมดัลอ่านและเขียนข้อความให้กำลังใจใต้โพสต์
 
-import { db } from "./firebase-config.js";
+import { supabase } from "./supabase-config.js";
 import { moodOf } from "./data.js";
 import { setMsg, openModal } from "./ui.js";
 import { moderate } from "./moderation.js";
-import {
-  collection, addDoc, getDocs, query, orderBy,
-  doc, updateDoc, increment, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 let current = null;
 let user = null;
@@ -15,10 +11,13 @@ let onDone = null;
 let bound = false;
 
 async function renderComments() {
-  const snap = await getDocs(
-    query(collection(db, "posts", current.id, "comments"), orderBy("createdAt", "asc"))
-  );
-  const items = snap.docs.map(d => d.data());
+  const { data, error } = await supabase
+    .from("comments")
+    .select("body, created_at")
+    .eq("post_id", current.id)
+    .order("created_at", { ascending: true });
+  const items = error ? [] : (data || []);
+  if (error) console.error(error);
 
   document.getElementById("cm-count").textContent =
     `ข้อความให้กำลังใจ ${items.length} ข้อความ`;
@@ -45,23 +44,22 @@ async function submit() {
 
   const btn = document.getElementById("cm-submit");
   btn.disabled = true;
-  try {
-    await addDoc(collection(db, "posts", current.id, "comments"), {
-      uid: user.uid,
-      body: text,
-      createdAt: serverTimestamp()
-    });
-    await updateDoc(doc(db, "posts", current.id), { commentCount: increment(1) });
-    document.getElementById("cm-text").value = "";
-    setMsg("cm-msg", "");
-    await renderComments();
-    await onDone();
-  } catch (e) {
-    console.error(e);
+  const { error } = await supabase.from("comments").insert({
+    post_id: current.id,
+    user_id: user.id,
+    body: text
+  });
+  if (error) {
+    console.error(error);
     setMsg("cm-msg", "ส่งไม่สำเร็จ ลองใหม่อีกครั้ง");
-  } finally {
     btn.disabled = false;
+    return;
   }
+  document.getElementById("cm-text").value = "";
+  setMsg("cm-msg", "");
+  await renderComments();
+  await onDone();
+  btn.disabled = false;
 }
 
 export async function openCommentModal(post, currentUser, reload) {

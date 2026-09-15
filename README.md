@@ -11,7 +11,7 @@
 | ส่วน | เครื่องมือ |
 |---|---|
 | Frontend | HTML, CSS, JavaScript (ไม่ใช้เฟรมเวิร์ก) |
-| Backend / ฐานข้อมูล | Firebase (Authentication + Cloud Firestore) |
+| Backend / ฐานข้อมูล | Supabase (Auth + Postgres + Row Level Security) |
 | Hosting | Netlify |
 | ออกแบบ | Figma |
 | เวอร์ชัน | Git + GitHub |
@@ -28,17 +28,19 @@ board.html            กระดานข้อความ (หน้าห�
 satisfaction.html     แบบประเมินความพึงพอใจ
 assets/css/           สไตล์ แยกตามกลุ่มหน้า
 assets/js/            ตรรกะแต่ละหน้า
-firestore.rules       กฎความปลอดภัยของฐานข้อมูล
+supabase/schema.sql   สร้างตาราง + trigger + RLS ของฐานข้อมูล
 docs/design/          ไฟล์ออกแบบจาก Figma
 ```
 
 ## เริ่มต้นใช้งาน
 
-1. สร้างโปรเจคที่ https://console.firebase.google.com
-2. เปิด Authentication → Sign-in method → Email/Password
-3. สร้าง Cloud Firestore (เลือก production mode)
-4. คัดลอกค่า config มาใส่ใน `assets/js/firebase-config.js`
-5. นำกฎใน `firestore.rules` ไปวางใน Firestore → Rules แล้วกด Publish
+1. สร้างโปรเจคที่ https://supabase.com/dashboard
+2. Authentication → Sign In / Providers → Email → **ปิด Confirm email**
+   (จำเป็นสำหรับเว็บทดลอง เพื่อให้สมัครแล้วเข้าใช้ได้ทันที)
+3. SQL Editor → New query → วางทั้งไฟล์ `supabase/schema.sql` → Run
+4. Project Settings → Data API / API Keys คัดลอก `Project URL` และ `anon public`
+   มาใส่ใน `assets/js/supabase-config.js`
+5. Authentication → URL Configuration เพิ่มโดเมนเว็บ (เช่น Netlify) ใน Redirect URLs
 6. เปิดเว็บด้วยเซิร์ฟเวอร์ (เปิดไฟล์ตรง ๆ ไม่ได้ เพราะใช้ ES module)
 
 ```bash

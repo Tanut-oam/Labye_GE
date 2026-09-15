@@ -1,16 +1,11 @@
 // หน้ากระดานข้อความ โหลดโพสต์ กรองตามอารมณ์และช่วงเวลา กดใจ
 
-import { auth, db } from "./firebase-config.js";
+import { supabase } from "./supabase-config.js";
 import { requireAuth } from "./guard.js";
 import { MOODS, ALL_MOOD, moodOf } from "./data.js";
 import { timeAgo, openModal, bindCloseButtons } from "./ui.js";
 import { initPostModal } from "./post.js";
 import { openCommentModal } from "./comment.js";
-import { signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  collection, query, where, orderBy, limit, getDocs, setDoc, deleteDoc,
-  doc, updateDoc, increment
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 let user = null;
 let moodFilter = "all";
@@ -21,25 +16,27 @@ const grid = document.getElementById("grid");
 const empty = document.getElementById("empty");
 
 // ── โหลดโพสต์จากฐานข้อมูล ──────────────────────────────
-// เรียงตามเวลาอย่างเดียว แล้วกรอง hidden กับช่วงเวลาฝั่ง client
-// เพื่อไม่ต้องพึ่ง composite index ของ Firestore ซึ่งต้องสร้างเองใน Console
 let loadFailed = false;
 async function loadPosts() {
-  const sinceMs = Date.now() - days * 86400000;
+  const sinceIso = new Date(Date.now() - days * 86400000).toISOString();
   loadFailed = false;
   try {
-    const snap = await getDocs(query(
-      collection(db, "posts"),
-      orderBy("createdAt", "desc"),
-      limit(200)
-    ));
-    posts = snap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
-      .filter(p => p.hidden === false && p.createdAt && p.createdAt.toMillis() >= sinceMs);
+    const { data, error } = await supabase
+      .from("posts")
+      .select("*")
+      .eq("hidden", false)
+      .gte("created_at", sinceIso)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    posts = data || [];
 
     // ดูว่าผู้ใช้เคยกดใจโพสต์ไหนไว้บ้าง
-    const likes = await getDocs(query(collection(db, "likes"), where("uid", "==", user.uid)));
-    const liked = new Set(likes.docs.map(d => d.data().postId));
+    const { data: likes, error: lErr } = await supabase
+      .from("likes")
+      .select("post_id")
+      .eq("user_id", user.id);
+    if (lErr) throw lErr;
+    const liked = new Set((likes || []).map(l => l.post_id));
     posts.forEach(p => { p.liked = liked.has(p.id); });
   } catch (e) {
     console.error(e);
@@ -100,7 +97,7 @@ function postCard(p) {
 
   const meta = document.createElement("p");
   meta.className = "meta";
-  meta.textContent = `${m.label} · ${p.createdAt ? timeAgo(p.createdAt.toDate()) : ""}`;
+  meta.textContent = `${m.label} · ${p.created_at ? timeAgo(new Date(p.created_at)) : ""}`;
 
   const body = document.createElement("p");
   body.className = "body";
@@ -112,16 +109,16 @@ function postCard(p) {
   const like = document.createElement("button");
   like.className = "like";
   like.style.color = m.ink;
-  like.textContent = `${p.liked ? "♥" : "♡"} ${p.likeCount || 0}`;
+  like.textContent = `${p.liked ? "♥" : "♡"} ${p.like_count || 0}`;
   like.addEventListener("click", () => toggleLike(p));
 
   // เจ้าของโพสต์เลือกปิดความคิดเห็นได้ โพสต์เก่าที่ไม่มีฟิลด์นี้ถือว่าเปิดไว้
-  const commentsOpen = p.commentsOpen !== false;
+  const commentsOpen = p.comments_open !== false;
   if (commentsOpen) {
     const reply = document.createElement("button");
     reply.className = "reply";
     reply.style.color = m.ink;
-    reply.textContent = `ตอบกลับ ${p.commentCount || 0}`;
+    reply.textContent = `ตอบกลับ ${p.comment_count || 0}`;
     reply.addEventListener("click", () => openCommentModal(p, user, loadPosts));
     foot.append(like, reply);
   } else {
@@ -136,19 +133,19 @@ function postCard(p) {
 }
 
 // ── กดใจ ──────────────────────────────────────────────
-// ใช้ uid ผสมกับ postId เป็นรหัสเอกสาร เพื่อไม่ให้กดซ้ำได้
+// ตัวนับ like บนโพสต์ถูกดูแลด้วย trigger ฝั่งฐานข้อมูล จึงแค่ insert/delete แถวใน likes
 async function toggleLike(p) {
-  const ref = doc(db, "likes", `${p.id}_${user.uid}`);
-  const postRef = doc(db, "posts", p.id);
   try {
     if (p.liked) {
-      await deleteDoc(ref);
-      await updateDoc(postRef, { likeCount: increment(-1) });
-      p.likeCount--; p.liked = false;
+      const { error } = await supabase.from("likes")
+        .delete().eq("post_id", p.id).eq("user_id", user.id);
+      if (error) throw error;
+      p.like_count = Math.max((p.like_count || 0) - 1, 0); p.liked = false;
     } else {
-      await setDoc(ref, { postId: p.id, uid: user.uid });
-      await updateDoc(postRef, { likeCount: increment(1) });
-      p.likeCount = (p.likeCount || 0) + 1; p.liked = true;
+      const { error } = await supabase.from("likes")
+        .insert({ post_id: p.id, user_id: user.id });
+      if (error) throw error;
+      p.like_count = (p.like_count || 0) + 1; p.liked = true;
     }
     renderGrid();
   } catch (e) {
@@ -167,7 +164,7 @@ document.querySelectorAll(".range-btn").forEach(btn => {
 });
 
 document.getElementById("logout").addEventListener("click", async () => {
-  await signOut(auth);
+  await supabase.auth.signOut();
   location.href = "index.html";
 });
 

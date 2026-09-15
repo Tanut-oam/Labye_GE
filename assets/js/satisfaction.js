@@ -1,12 +1,9 @@
 // แบบประเมินความพึงพอใจหลังใช้เว็บไซต์ ทำทีละข้อแบบเดียวกับแบบวัดความเครียด
 
-import { db } from "./firebase-config.js";
+import { supabase } from "./supabase-config.js";
 import { requireAuth } from "./guard.js";
 import { SAT_ITEMS } from "./data.js";
 import { setMsg } from "./ui.js";
-import {
-  collection, addDoc, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 let user = null;
 let index = 0;
@@ -42,20 +39,19 @@ async function finish() {
   el.next.disabled = true;
   el.back.disabled = true;
   setMsg("msg", "กำลังส่ง…", true);
-  try {
-    await addDoc(collection(db, "satisfaction"), {
-      uid: user.uid,
-      answers,
-      createdAt: serverTimestamp()
-    });
-    setMsg("msg", "ส่งแบบประเมินแล้ว ขอบคุณที่ช่วยกันทำให้เว็บนี้ดีขึ้น กำลังกลับไปหน้ากระดาน…", true);
-    setTimeout(() => { location.href = "board.html"; }, 1200);
-  } catch (e) {
-    console.error(e);
+  const { error } = await supabase.from("satisfaction").insert({
+    user_id: user.id,
+    answers
+  });
+  if (error) {
+    console.error(error);
     setMsg("msg", "ส่งไม่สำเร็จ ลองกดอีกครั้ง");
     el.next.disabled = false;
     el.back.disabled = false;
+    return;
   }
+  setMsg("msg", "ส่งแบบประเมินแล้ว ขอบคุณที่ช่วยกันทำให้เว็บนี้ดีขึ้น กำลังกลับไปหน้ากระดาน…", true);
+  setTimeout(() => { location.href = "board.html"; }, 1200);
 }
 
 el.next.addEventListener("click", () => {

@@ -1,12 +1,9 @@
 // โมดัลเขียนโพสต์ใหม่
 
-import { db } from "./firebase-config.js";
+import { supabase } from "./supabase-config.js";
 import { MOODS, moodOf } from "./data.js";
 import { setMsg, closeModal } from "./ui.js";
 import { moderate, RISK_NOTICE } from "./moderation.js";
-import {
-  collection, addDoc, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 let selected = "anx";
 let commentsOpen = true;
@@ -54,27 +51,24 @@ async function submit() {
 
   const btn = document.getElementById("post-submit");
   btn.disabled = true;
-  try {
-    await addDoc(collection(db, "posts"), {
-      uid: user.uid,
-      mood: selected,
-      body: text,
-      commentsOpen,
-      likeCount: 0,
-      commentCount: 0,
-      hidden: false,
-      createdAt: serverTimestamp()
-    });
-    textarea().value = "";
-    setMsg("post-msg", "");
-    closeModal("ov-post");
-    await onDone();
-  } catch (e) {
-    console.error(e);
+  const { error } = await supabase.from("posts").insert({
+    user_id: user.id,
+    mood: selected,
+    body: text,
+    comments_open: commentsOpen,
+    hidden: false
+  });
+  if (error) {
+    console.error(error);
     setMsg("post-msg", "โพสต์ไม่สำเร็จ ลองใหม่อีกครั้ง");
-  } finally {
     btn.disabled = false;
+    return;
   }
+  textarea().value = "";
+  setMsg("post-msg", "");
+  closeModal("ov-post");
+  await onDone();
+  btn.disabled = false;
 }
 
 export function initPostModal(currentUser, reload) {

@@ -1,17 +1,9 @@
 // จัดการการเข้าสู่ระบบ สมัครสมาชิก และตั้งรหัสผ่านใหม่
 // ไฟล์เดียวใช้ได้ทั้งสามหน้า โดยดูจาก data-page ของ body
 
-import { auth, db } from "./firebase-config.js";
+import { supabase } from "./supabase-config.js";
 import { redirectIfSignedIn } from "./guard.js";
 import { setMsg, clearMsg, authError } from "./ui.js";
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  doc, setDoc, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const page = document.body.dataset.page;
 const submit = document.getElementById("submit");
@@ -28,13 +20,13 @@ async function doLogin() {
 
   submit.disabled = true;
   setMsg("msg", "กำลังเข้าสู่ระบบ…", true);
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-    location.href = "board.html";
-  } catch (e) {
-    setMsg("msg", authError(e.code));
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    setMsg("msg", authError(error));
     submit.disabled = false;
+    return;
   }
+  location.href = "board.html";
 }
 
 async function doRegister() {
@@ -53,19 +45,29 @@ async function doRegister() {
 
   submit.disabled = true;
   setMsg("msg", "กำลังสร้างบัญชี…", true);
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email, p1);
-    await setDoc(doc(db, "profiles", cred.user.uid), {
-      faculty,
-      year,
-      createdAt: serverTimestamp()
-    });
-    // สมัครเสร็จให้ทำแบบวัดก่อนใช้งาน เก็บเป็นคะแนน pre-test
-    location.href = "stress-test.html?phase=pre";
-  } catch (e) {
-    setMsg("msg", authError(e.code));
+
+  const { data, error } = await supabase.auth.signUp({ email, password: p1 });
+  if (error) {
+    setMsg("msg", authError(error));
     submit.disabled = false;
+    return;
   }
+  // ต้องปิด Confirm email ใน Supabase เพื่อให้ได้ session ทันที ไม่งั้นจะเขียน profile ไม่ได้
+  if (!data.session) {
+    setMsg("msg", "สมัครแล้ว แต่ต้องยืนยันอีเมลก่อน (ปิด Confirm email ใน Supabase หากเป็นเว็บทดลอง)", true);
+    submit.disabled = false;
+    return;
+  }
+
+  const { error: pErr } = await supabase
+    .from("profiles")
+    .insert({ id: data.user.id, faculty, year });
+  if (pErr) {
+    console.error(pErr);
+    setMsg("msg", "สร้างบัญชีสำเร็จ แต่บันทึกข้อมูลคณะ/ชั้นปีไม่สำเร็จ ลองเข้าสู่ระบบแล้วทำแบบวัดต่อได้");
+  }
+  // สมัครเสร็จให้ทำแบบวัดก่อนใช้งาน เก็บเป็นคะแนน pre-test
+  location.href = "stress-test.html?phase=pre";
 }
 
 async function doReset() {
@@ -73,13 +75,14 @@ async function doReset() {
   if (!email) return setMsg("msg", "กรอกอีเมลก่อน");
 
   submit.disabled = true;
-  try {
-    await sendPasswordResetEmail(auth, email);
-    setMsg("msg", "ส่งลิงก์ตั้งรหัสผ่านไปที่อีเมลแล้ว ลองเช็กกล่องจดหมาย", true);
-  } catch (e) {
-    setMsg("msg", authError(e.code));
+  const redirectTo = location.origin + location.pathname.replace(/forgot-password\.html$/, "index.html");
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+  if (error) {
+    setMsg("msg", authError(error));
     submit.disabled = false;
+    return;
   }
+  setMsg("msg", "ส่งลิงก์ตั้งรหัสผ่านไปที่อีเมลแล้ว ลองเช็กกล่องจดหมาย", true);
 }
 
 const handlers = { login: doLogin, register: doRegister, forgot: doReset };

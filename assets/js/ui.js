@@ -11,21 +11,35 @@ export function clearMsg(id) {
   setMsg(id, "");
 }
 
-// แปลงรหัสข้อผิดพลาดของ Firebase เป็นข้อความที่ผู้ใช้เข้าใจ
-export function authError(code) {
-  const map = {
-    "auth/invalid-email": "รูปแบบอีเมลยังไม่ถูกต้อง",
-    "auth/user-not-found": "ไม่พบบัญชีที่ใช้อีเมลนี้",
-    "auth/wrong-password": "รหัสผ่านไม่ถูกต้อง",
-    "auth/invalid-credential": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
-    "auth/email-already-in-use": "อีเมลนี้สมัครไว้แล้ว",
-    "auth/weak-password": "รหัสผ่านสั้นเกินไป ต้องยาวอย่างน้อย 6 ตัวอักษร",
-    "auth/too-many-requests": "ลองผิดหลายครั้งเกินไป รอสักครู่แล้วลองใหม่",
-    "auth/network-request-failed": "เชื่อมต่อไม่ได้ ลองเช็กอินเทอร์เน็ต",
-    "auth/operation-not-allowed": "ระบบยังไม่เปิดให้สมัครด้วยอีเมล ต้องเปิด Email/Password ใน Firebase Console ก่อน",
-    "auth/configuration-not-found": "ยังไม่ได้เปิด Authentication ใน Firebase Console ให้เปิดแล้วลองใหม่"
+// แปลงข้อผิดพลาดของ Supabase Auth เป็นข้อความที่ผู้ใช้เข้าใจ
+// รับ error object จาก supabase-js (มี .code และ .message)
+export function authError(err) {
+  const code = err && err.code ? err.code : "";
+  const msg = (err && err.message ? err.message : "").toLowerCase();
+
+  const byCode = {
+    invalid_credentials: "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+    email_not_confirmed: "อีเมลนี้ยังไม่ได้ยืนยัน (ถ้าเป็นเว็บทดลอง ให้ปิด Confirm email ใน Supabase)",
+    user_already_exists: "อีเมลนี้สมัครไว้แล้ว",
+    email_exists: "อีเมลนี้สมัครไว้แล้ว",
+    weak_password: "รหัสผ่านสั้นเกินไป ต้องยาวอย่างน้อย 6 ตัวอักษร",
+    over_request_rate_limit: "ลองบ่อยเกินไป รอสักครู่แล้วลองใหม่",
+    over_email_send_rate_limit: "ขออีเมลบ่อยเกินไป รอสักครู่แล้วลองใหม่",
+    validation_failed: "รูปแบบอีเมลหรือรหัสผ่านยังไม่ถูกต้อง",
+    signup_disabled: "ระบบยังไม่เปิดให้สมัคร ต้องเปิด Email provider ใน Supabase ก่อน"
   };
-  return map[code] || "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง";
+  if (byCode[code]) return byCode[code];
+
+  // เผื่อบางเวอร์ชันส่งมาเป็นข้อความอย่างเดียว
+  if (msg.includes("already registered") || msg.includes("already been registered"))
+    return "อีเมลนี้สมัครไว้แล้ว";
+  if (msg.includes("invalid login")) return "อีเมลหรือรหัสผ่านไม่ถูกต้อง";
+  if (msg.includes("email") && msg.includes("confirm")) return "อีเมลนี้ยังไม่ได้ยืนยัน";
+  if (msg.includes("password")) return "รหัสผ่านไม่ผ่านเงื่อนไข ต้องยาวอย่างน้อย 6 ตัวอักษร";
+  if (msg.includes("failed to fetch") || msg.includes("network"))
+    return "เชื่อมต่อไม่ได้ ลองเช็กอินเทอร์เน็ต";
+
+  return "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง";
 }
 
 export function timeAgo(date) {
