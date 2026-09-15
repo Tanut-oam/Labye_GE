@@ -2,7 +2,7 @@
 
 import { supabase } from "./supabase-config.js";
 import { requireAuth } from "./guard.js";
-import { MOODS, ALL_MOOD, moodOf } from "./data.js";
+import { MOODS, ALL_MOOD, moodOf, levelOf } from "./data.js";
 import { timeAgo, openModal, bindCloseButtons } from "./ui.js";
 import { initPostModal } from "./post.js";
 import { openCommentModal } from "./comment.js";
@@ -14,6 +14,62 @@ let posts = [];
 
 const grid = document.getElementById("grid");
 const empty = document.getElementById("empty");
+const historyList = document.getElementById("stress-history-list");
+const historyStatus = document.getElementById("history-status");
+let stressHistory = [];
+
+function formatAssessmentDate(value) {
+  return new Intl.DateTimeFormat("th-TH", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(new Date(value));
+}
+
+function renderStressHistory() {
+  historyList.innerHTML = "";
+  if (!stressHistory.length) {
+    historyStatus.textContent = "ยังไม่มีผลแบบประเมิน";
+    return;
+  }
+  historyStatus.textContent = `พบ ${stressHistory.length} ครั้ง เรียงจากล่าสุด`;
+  stressHistory.forEach((test, index) => {
+    const level = levelOf(test.total);
+    const previous = stressHistory[index + 1];
+    const change = previous ? test.total - previous.total : null;
+    const row = document.createElement("article");
+    row.className = "history-item";
+    row.innerHTML = `
+      <div class="history-score"><strong>${test.total}</strong><span>/ 100</span></div>
+      <div class="history-copy">
+        <strong>${level.label}</strong>
+        <span>${formatAssessmentDate(test.created_at)}</span>
+      </div>
+      <span class="history-change ${change === null ? "neutral" : change <= 0 ? "better" : "higher"}">
+        ${change === null ? "ครั้งแรก" : change === 0 ? "เท่าครั้งก่อน" : `${change > 0 ? "+" : ""}${change} คะแนน`}
+      </span>`;
+    historyList.appendChild(row);
+  });
+}
+
+async function loadStressHistory() {
+  historyStatus.textContent = "กำลังโหลดประวัติ…";
+  const { data, error } = await supabase
+    .from("stress_tests")
+    .select("id,total,phase,created_at")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+  if (error) {
+    console.error(error);
+    historyStatus.innerHTML = 'โหลดประวัติไม่สำเร็จ <button class="link" id="retry-history" type="button">ลองอีกครั้ง</button>';
+    document.getElementById("retry-history").addEventListener("click", loadStressHistory);
+    return;
+  }
+  stressHistory = data || [];
+  const latest = stressHistory[0];
+  document.getElementById("latest-stress-level").textContent = latest ? levelOf(latest.total).label : "ยังไม่มีผลประเมิน";
+  document.getElementById("latest-stress-meta").textContent = latest ? `${latest.total} คะแนน · ${formatAssessmentDate(latest.created_at)}` : "เริ่มประเมินเพื่อเก็บเป็นจุดเริ่มต้น";
+  renderStressHistory();
+}
 
 // ── โหลดโพสต์จากฐานข้อมูล ──────────────────────────────
 let loadFailed = false;
@@ -168,11 +224,25 @@ document.getElementById("logout").addEventListener("click", async () => {
   location.href = "index.html";
 });
 
+document.getElementById("open-stress-history").addEventListener("click", async event => {
+  openModal("ov-stress-history");
+  document.querySelector('#ov-stress-history [data-close]').focus();
+  await loadStressHistory();
+  event.currentTarget.dataset.opened = "true";
+});
+
 bindCloseButtons();
 
 requireAuth().then(u => {
   user = u;
   renderMoodBar();
   initPostModal(user, loadPosts);
+  loadStressHistory().then(() => {
+    if (location.hash === "#stress-history") {
+      openModal("ov-stress-history");
+      document.querySelector('#ov-stress-history [data-close]').focus();
+      history.replaceState(null, "", location.pathname + location.search);
+    }
+  });
   loadPosts();
 });

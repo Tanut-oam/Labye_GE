@@ -25,6 +25,18 @@
       และอ่านข้อความจากเพื่อนคนอื่นได้แบบไม่ระบุตัวตน
     </p>
 
+    <section class="stress-summary" aria-labelledby="stress-summary-title">
+      <div class="stress-summary-head">
+        <span class="stress-icon" aria-hidden="true">🌿</span>
+        <div><p class="side-label" id="stress-summary-title">เช็กอินกับตัวเอง</p><strong id="latest-stress-level">กำลังโหลดผลล่าสุด…</strong></div>
+      </div>
+      <p id="latest-stress-meta" class="stress-meta"></p>
+      <div class="stress-actions">
+        <a class="btn-sm primary" href="stress-test.html?phase=post">ประเมินอีกครั้ง</a>
+        <button class="btn-sm" id="open-stress-history" type="button">ดูประวัติ</button>
+      </div>
+    </section>
+
     <p class="side-label">ช่วงเวลา</p>
     <button class="range-btn" data-days="1" aria-pressed="true">วันนี้</button>
     <button class="range-btn" data-days="7" aria-pressed="false">7 วันที่ผ่านมา</button>
@@ -43,6 +55,19 @@
     <div class="topbar" id="moods"><span class="q">อยากอ่านความรู้สึกไหน?</span></div>
     <div class="grid" id="grid"></div>
     <p class="empty" id="empty" hidden>ยังไม่มีใครโพสต์ในหมวดนี้ — เริ่มจากเรื่องของคุณก็ได้</p>
+  </div>
+</div>
+
+<div class="overlay" id="ov-stress-history">
+  <div class="modal history-modal" role="dialog" aria-modal="true" aria-labelledby="history-title" aria-describedby="history-description">
+    <div class="history-head">
+      <div><p class="eyebrow">บันทึกของคุณ</p><h3 id="history-title">ประวัติความเครียด</h3></div>
+      <button class="icon-close" type="button" data-close="ov-stress-history" aria-label="ปิดประวัติ">×</button>
+    </div>
+    <p class="sub" id="history-description">ผลทั้งหมดเป็นข้อมูลส่วนตัว มีเพียงคุณที่เปิดดูได้</p>
+    <div class="history-status" id="history-status" role="status" aria-live="polite">กำลังโหลดประวัติ…</div>
+    <div class="history-list" id="stress-history-list"></div>
+    <div class="history-foot"><a class="btn-main" href="stress-test.html?phase=post">ทำแบบประเมินอีกครั้ง</a></div>
   </div>
 </div>
 

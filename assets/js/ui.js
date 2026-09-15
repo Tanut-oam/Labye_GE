@@ -19,7 +19,7 @@ export function authError(err) {
 
   const byCode = {
     invalid_credentials: "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
-    email_not_confirmed: "อีเมลนี้ยังไม่ได้ยืนยัน (ถ้าเป็นเว็บทดลอง ให้ปิด Confirm email ใน Supabase)",
+    email_not_confirmed: "ระบบยังเปิดการยืนยันอีเมลอยู่ กรุณาติดต่อผู้ดูแลระบบ",
     user_already_exists: "อีเมลนี้สมัครไว้แล้ว",
     email_exists: "อีเมลนี้สมัครไว้แล้ว",
     weak_password: "รหัสผ่านสั้นเกินไป ต้องยาวอย่างน้อย 6 ตัวอักษร",
@@ -52,16 +52,46 @@ export function timeAgo(date) {
 }
 
 export function openModal(id) {
-  document.getElementById(id).classList.add("open");
+  const modal = document.getElementById(id);
+  modal.dataset.returnFocus = document.activeElement?.id || "";
+  modal.classList.add("open");
+  document.body.classList.add("modal-open");
+  const first = modal.querySelector('button:not([disabled]),a[href],input:not([disabled]),textarea:not([disabled]),select:not([disabled])');
+  first?.focus();
 }
 
 export function closeModal(id) {
-  document.getElementById(id).classList.remove("open");
+  const modal = document.getElementById(id);
+  modal.classList.remove("open");
+  if (!document.querySelector(".overlay.open")) document.body.classList.remove("modal-open");
+  const returnTarget = modal.dataset.returnFocus && document.getElementById(modal.dataset.returnFocus);
+  returnTarget?.focus();
 }
 
 // ผูกปุ่มที่มี data-close ให้ปิดโมดัลตามที่ระบุ
 export function bindCloseButtons() {
   document.querySelectorAll("[data-close]").forEach(btn => {
     btn.addEventListener("click", () => closeModal(btn.dataset.close));
+  });
+  document.querySelectorAll(".overlay").forEach(overlay => {
+    overlay.addEventListener("mousedown", event => {
+      if (event.target === overlay) closeModal(overlay.id);
+    });
+  });
+  document.addEventListener("keydown", event => {
+    const modal = document.querySelector(".overlay.open");
+    if (!modal) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeModal(modal.id);
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = [...modal.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])')];
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   });
 }

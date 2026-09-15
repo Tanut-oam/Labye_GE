@@ -11,47 +11,46 @@
 <link rel="stylesheet" href="assets/css/auth.css">
 </head>
 <body data-page="register">
-<main class="auth-wrap">
-  <div class="auth-card">
-    <div class="brand"><span class="brand-mark">☺</span><span class="brand-name">สมัครสมาชิก</span></div>
+<main class="auth-wrap register-wrap">
+  <form class="auth-card register-card" id="register-form" novalidate>
+    <header class="register-head">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">☺</span><span class="brand-name">สมัครสมาชิก</span></div>
+      <p>ทำแบบประเมินสั้น ๆ ก่อนเริ่มใช้งาน เพื่อให้คุณย้อนดูการเปลี่ยนแปลงของตัวเองได้</p>
+      <ol class="steps" aria-label="ขั้นตอนสมัครสมาชิก">
+        <li class="active" data-step-dot="account"><span>1</span>ข้อมูลบัญชี</li>
+        <li data-step-dot="assessment"><span>2</span>ประเมินความเครียด</li>
+        <li data-step-dot="review"><span>3</span>สร้างบัญชี</li>
+      </ol>
+    </header>
 
-    <div class="field">
-      <label for="email">อีเมล</label>
-      <input id="email" type="email" autocomplete="email" placeholder="you@kkumail.com">
-    </div>
-    <div class="field">
-      <label for="password">รหัสผ่าน</label>
-      <input id="password" type="password" autocomplete="new-password">
-    </div>
-    <div class="field">
-      <label for="password2">ยืนยันรหัสผ่าน</label>
-      <input id="password2" type="password" autocomplete="new-password">
-    </div>
-    <div class="field">
-      <label for="faculty">คณะ</label>
-      <select id="faculty">
-        <option value="">เลือกคณะ</option>
-        <option>วิทยาศาสตร์</option>
-        <option>วิศวกรรมศาสตร์</option>
-        <option>ศึกษาศาสตร์</option>
-        <option>มนุษยศาสตร์และสังคมศาสตร์</option>
-        <option>อื่น ๆ</option>
-      </select>
-    </div>
-    <div class="field">
-      <label for="year">ชั้นปี</label>
-      <select id="year">
-        <option value="">เลือกชั้นปี</option>
-        <option>1</option><option>2</option><option>3</option>
-        <option>4</option><option>สูงกว่าปี 4</option>
-      </select>
-    </div>
+    <section data-register-step="account">
+      <div class="field"><label for="email">อีเมล</label><input id="email" type="email" autocomplete="email" placeholder="you@kkumail.com" required><p class="field-error" id="email-error"></p></div>
+      <div class="field"><label for="password">รหัสผ่าน</label><input id="password" type="password" autocomplete="new-password" minlength="8" required><p class="field-help">อย่างน้อย 8 ตัวอักษร</p><p class="field-error" id="password-error"></p></div>
+      <div class="field"><label for="password2">ยืนยันรหัสผ่าน</label><input id="password2" type="password" autocomplete="new-password" required><p class="field-error" id="password2-error"></p></div>
+      <div class="field"><label for="faculty">คณะ</label><select id="faculty" required><option value="">เลือกคณะ</option><option>วิทยาศาสตร์</option><option>วิศวกรรมศาสตร์</option><option>ศึกษาศาสตร์</option><option>มนุษยศาสตร์และสังคมศาสตร์</option><option>อื่น ๆ</option></select><p class="field-error" id="faculty-error"></p></div>
+      <div class="field"><label for="year">ชั้นปี</label><select id="year" required><option value="">เลือกชั้นปี</option><option>1</option><option>2</option><option>3</option><option>4</option><option>สูงกว่าปี 4</option></select><p class="field-error" id="year-error"></p></div>
+      <button class="btn-main" id="submit" type="button">เริ่มทำแบบประเมิน</button>
+      <a class="btn-ghost" href="index.html">กลับไปเข้าสู่ระบบ</a>
+    </section>
 
-    <p class="msg" id="msg" role="status"></p>
+    <section data-register-step="assessment" hidden>
+      <div class="progress" aria-hidden="true"><span id="register-bar"></span></div>
+      <p class="q-no" id="register-q-no"></p>
+      <h1 class="q-text" id="register-q-text"></h1>
+      <fieldset class="scale-fieldset"><legend class="sr-only">เลือกระดับความเครียด</legend><div class="scale scale-labelled" id="register-scale"></div></fieldset>
+      <div class="quiz-nav"><button class="btn-sm" id="register-back" type="button">ย้อนกลับ</button><button class="btn-sm primary" id="register-next" type="button">ข้อต่อไป</button></div>
+    </section>
 
-    <button class="btn-main" id="submit">สมัคร</button>
-    <a class="btn-ghost" href="index.html" style="display:flex;align-items:center;justify-content:center;text-decoration:none">กลับไปเข้าสู่ระบบ</a>
-  </div>
+    <section class="register-review" data-register-step="review" hidden>
+      <p class="eyebrow">ทำแบบประเมินครบแล้ว</p>
+      <div class="score-ring small"><span class="n" id="register-score">—</span><span class="d">จาก 100</span></div>
+      <h1 class="level" id="register-level"></h1>
+      <p class="level-note" id="register-note"></p>
+      <div class="review-actions"><button class="btn-main" id="create-account" type="submit">สร้างบัญชีและบันทึกผล</button><button class="link" id="edit-assessment" type="button">กลับไปแก้คำตอบ</button></div>
+    </section>
+
+    <p class="msg register-msg" id="msg" role="status" aria-live="polite"></p>
+  </form>
 </main>
 <script type="module" src="assets/js/auth.js"></script>
 </body>

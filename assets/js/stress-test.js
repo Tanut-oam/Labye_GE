@@ -3,7 +3,7 @@
 
 import { supabase } from "./supabase-config.js";
 import { requireAuth } from "./guard.js";
-import { QUESTIONS } from "./data.js";
+import { QUESTIONS, SCALE_OPTIONS } from "./data.js";
 import { setMsg } from "./ui.js";
 
 const phase = new URLSearchParams(location.search).get("phase") === "post" ? "post" : "pre";
@@ -29,13 +29,15 @@ function render() {
   setMsg("msg", "");
 
   el.scale.innerHTML = "";
-  for (let v = 1; v <= 5; v++) {
+  SCALE_OPTIONS.forEach(option => {
     const b = document.createElement("button");
-    b.textContent = v;
-    b.setAttribute("aria-pressed", answers[index] === v);
-    b.addEventListener("click", () => { answers[index] = v; render(); });
+    b.type = "button";
+    b.setAttribute("aria-label", `${option.value} ${option.label}`);
+    b.innerHTML = `<strong>${option.value}</strong><span>${option.label}</span>`;
+    b.setAttribute("aria-pressed", answers[index] === option.value);
+    b.addEventListener("click", () => { answers[index] = option.value; render(); el.next.focus(); });
     el.scale.appendChild(b);
-  }
+  });
 }
 
 async function finish() {
@@ -54,7 +56,7 @@ async function finish() {
     el.next.disabled = false;
     return;
   }
-  location.href = `stress-result.html?score=${total}`;
+  location.href = `stress-result.html?score=${total}&source=retake`;
 }
 
 el.next.addEventListener("click", () => {

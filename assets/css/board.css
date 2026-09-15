@@ -29,6 +29,18 @@
 
 .side .helpline{ margin-top:auto }
 
+.stress-summary{
+  background:#fff; border:1px solid rgba(15,110,86,.13); border-radius:16px;
+  padding:13px; margin:2px 0 16px; box-shadow:0 10px 30px rgba(15,110,86,.07);
+}
+.stress-summary-head{ display:flex; align-items:center; gap:10px }
+.stress-summary-head .side-label{ margin:0 }
+.stress-summary-head strong{ display:block; font-size:12.5px; line-height:1.35; color:var(--ink) }
+.stress-icon{ display:grid; place-items:center; width:34px; height:34px; border-radius:11px; background:var(--mint-soft) }
+.stress-meta{ font-size:10.5px; color:var(--ink-faint); margin:9px 0 10px }
+.stress-actions{ display:grid; grid-template-columns:1fr 1fr; gap:6px }
+.stress-actions .btn-sm{ padding:7px 8px; text-align:center; text-decoration:none; line-height:1.4 }
+
 .main{ flex:1; min-width:0; padding:24px 28px 48px }
 
 .topbar{
@@ -117,6 +129,26 @@
 .comment .who{ font-size:11px; color:var(--ink-faint); margin:0 0 3px }
 .comment p:last-child{ margin:0; font-size:14px }
 
+.history-modal{ max-width:560px; max-height:min(680px,calc(100vh - 40px)); display:flex; flex-direction:column }
+.history-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:18px }
+.history-head h3{ font-size:21px }
+.eyebrow{ margin:0 0 2px; color:var(--mint-deep); font-size:11px; font-weight:600; letter-spacing:.05em }
+.icon-close{ width:40px; height:40px; flex:0 0 40px; border:1px solid var(--line); border-radius:50%; background:#fff; color:var(--ink-soft); font-size:24px; line-height:1 }
+.history-status{ min-height:28px; color:var(--ink-faint); font-size:12px }
+.history-list{ overflow:auto; display:grid; gap:9px; padding:2px 3px 2px 0; scrollbar-color:var(--mint) transparent; scrollbar-width:thin }
+.history-item{ display:grid; grid-template-columns:64px 1fr auto; align-items:center; gap:12px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px }
+.history-score{ display:flex; flex-direction:column; align-items:center; color:var(--mint-deep) }
+.history-score strong{ font-size:23px; line-height:1 }
+.history-score span,.history-copy span{ font-size:10.5px; color:var(--ink-faint) }
+.history-copy{ display:flex; flex-direction:column; min-width:0 }
+.history-copy strong{ font-size:13px }
+.history-change{ border-radius:999px; padding:5px 9px; font-size:10.5px; white-space:nowrap }
+.history-change.better{ background:var(--mint-soft); color:var(--mint-deep) }
+.history-change.higher{ background:#FBEAF0; color:#993556 }
+.history-change.neutral{ background:var(--mood-ok); color:var(--ink-soft) }
+.history-foot{ padding-top:16px }
+.history-foot .btn-main{ display:flex; align-items:center; justify-content:center; text-decoration:none }
+
 @media (max-width:760px){
   .board{ flex-direction:column }
   .side{ width:100%; border-radius:0 0 24px 24px; padding:16px }
@@ -127,6 +159,10 @@
   .range-btn{ display:none }
   .side .avatar{ display:none }
   .side .helpline{ margin-top:12px }
+  .stress-summary{ margin:12px 0 0 }
+  .stress-summary .side-label{ display:block }
   .main{ padding:18px 16px 40px }
   .grid{ grid-template-columns:1fr }
+  .history-item{ grid-template-columns:58px 1fr }
+  .history-change{ grid-column:2; justify-self:start }
 }

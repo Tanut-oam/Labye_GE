@@ -56,6 +56,7 @@ create table if not exists public.stress_tests (
   answers    jsonb not null,
   created_at timestamptz not null default now()
 );
+create index if not exists stress_tests_user_created_idx on public.stress_tests (user_id, created_at desc);
 
 create table if not exists public.satisfaction (
   id         uuid primary key default gen_random_uuid(),
@@ -63,6 +64,10 @@ create table if not exists public.satisfaction (
   answers    jsonb not null,
   created_at timestamptz not null default now()
 );
+
+-- ลบ trigger รุ่นที่รองรับ Confirm email หากเคยติดตั้งไว้
+drop trigger if exists on_auth_user_created on auth.users;
+drop function if exists public.handle_new_user();
 
 -- ── trigger นับ like / comment (ทำงานฝั่งเซิร์ฟเวอร์ ข้าม RLS) ──
 -- ผู้ใช้จึงไม่ต้องมีสิทธิ์แก้ตัวนับบนโพสต์ของคนอื่น
@@ -75,7 +80,7 @@ begin
     update public.posts set like_count = greatest(like_count - 1, 0) where id = old.post_id;
   end if;
   return null;
-end $$;
+end; $$;
 
 drop trigger if exists likes_count_trg on public.likes;
 create trigger likes_count_trg
@@ -91,7 +96,7 @@ begin
     update public.posts set comment_count = greatest(comment_count - 1, 0) where id = old.post_id;
   end if;
   return null;
-end $$;
+end; $$;
 
 drop trigger if exists comments_count_trg on public.comments;
 create trigger comments_count_trg
@@ -174,6 +179,52 @@ create policy stress_read_own on public.stress_tests
 drop policy if exists stress_insert_own on public.stress_tests;
 create policy stress_insert_own on public.stress_tests
   for insert to authenticated with check (auth.uid() = user_id);
+
+-- บันทึกโปรไฟล์และผลประเมินครั้งแรกใน transaction เดียวหลัง Auth สร้าง session แล้ว
+create or replace function public.complete_registration(
+  p_faculty text,
+  p_year text,
+  p_total int,
+  p_answers jsonb
+) returns void
+language plpgsql
+security invoker
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'authentication required';
+  end if;
+  if nullif(trim(p_faculty), '') is null or nullif(trim(p_year), '') is null then
+    raise exception 'profile fields are required';
+  end if;
+  if p_total < 20 or p_total > 100 or jsonb_typeof(p_answers) <> 'array' or jsonb_array_length(p_answers) <> 20 then
+    raise exception 'invalid assessment';
+  end if;
+  if exists (
+    select 1 from jsonb_array_elements_text(p_answers) answer
+    where answer !~ '^[1-5]$'
+  ) or p_total <> (
+    select sum(answer::int) from jsonb_array_elements_text(p_answers) answer
+  ) then
+    raise exception 'assessment score does not match answers';
+  end if;
+
+  insert into public.profiles (id, faculty, year)
+  values (auth.uid(), trim(p_faculty), trim(p_year))
+  on conflict (id) do update set faculty = excluded.faculty, year = excluded.year;
+
+  if not exists (
+    select 1 from public.stress_tests where user_id = auth.uid() and phase = 'pre'
+  ) then
+    insert into public.stress_tests (user_id, phase, total, answers)
+    values (auth.uid(), 'pre', p_total, p_answers);
+  end if;
+end;
+$$;
+
+revoke all on function public.complete_registration(text, text, int, jsonb) from public;
+grant execute on function public.complete_registration(text, text, int, jsonb) to authenticated;
 
 -- satisfaction: เจ้าของอ่าน/เพิ่มได้ แก้/ลบไม่ได้
 drop policy if exists sat_read_own on public.satisfaction;
