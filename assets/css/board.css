@@ -1,0 +1,132 @@
+/* หน้ากระดานข้อความ และโมดัลเขียนโพสต์ / คอมเมนต์ */
+
+.board{ display:flex; min-height:100vh }
+
+.side{
+  width:230px; flex-shrink:0; background:var(--cream);
+  border-radius:0 32px 32px 0; padding:22px 18px;
+  display:flex; flex-direction:column;
+}
+.side h2{ font-size:15px; font-weight:600; margin:14px 0 6px }
+.side .desc{ font-size:12px; color:var(--ink-soft); margin:0 0 20px }
+.side .who{ text-align:center; font-size:13px; color:var(--ink-soft); margin:0 }
+.side-label{ font-size:12px; color:var(--ink-faint); margin:0 0 8px }
+
+.avatar{
+  width:82px; height:82px; border-radius:50%; background:#D3D1C7;
+  margin:6px auto 8px; display:flex; align-items:center; justify-content:center;
+  font-size:36px; color:#fff;
+}
+
+.range-btn{
+  width:100%; border:1px solid transparent; background:#fff;
+  border-radius:999px; padding:8px; font-size:13px;
+  color:var(--mood-ok-ink); margin-bottom:7px;
+}
+.range-btn[aria-pressed="true"]{
+  background:#FAC775; color:var(--mood-bright-ink);
+}
+
+.side .helpline{ margin-top:auto }
+
+.main{ flex:1; min-width:0; padding:24px 28px 48px }
+
+.topbar{
+  display:flex; align-items:center; gap:8px;
+  flex-wrap:wrap; margin-bottom:22px;
+}
+.topbar .q{ font-size:13px; color:var(--mint-deep); margin-right:4px }
+
+.mood{
+  border:none; padding:9px 18px; border-radius:999px;
+  font-size:13px; background:#fff; color:var(--mood-ok-ink); opacity:.62;
+}
+.mood[aria-pressed="true"]{ opacity:1; font-weight:500 }
+
+.grid{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:16px;
+}
+
+.note{
+  border-radius:6px; padding:16px 16px 13px; min-height:152px;
+  display:flex; flex-direction:column; text-align:left;
+  width:100%; border:none;
+}
+.note .meta{ font-size:11px; margin:0 0 8px; opacity:.85 }
+.note .body{ font-size:14px; line-height:1.55; margin:0; flex:1 }
+.note .foot{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-top:12px; font-size:12px;
+}
+
+.like{
+  background:rgba(255,255,255,.7); border:none;
+  border-radius:999px; padding:5px 13px; font-size:12px;
+}
+.reply{ background:transparent; border:none; font-size:12px }
+.reply-closed{ font-size:12px; opacity:.6 }
+
+.note-new{
+  background:var(--paper); border:1.5px dashed var(--line);
+  align-items:center; justify-content:center; text-align:center;
+}
+.note-new .plus{ font-size:26px; color:var(--ink-faint); line-height:1 }
+
+.empty{ font-size:13px; color:var(--mint-deep); margin:12px 2px }
+
+/* โมดัล */
+.overlay{
+  position:fixed; inset:0; background:rgba(15,110,86,.38);
+  display:none; align-items:center; justify-content:center;
+  padding:20px; z-index:10; overflow:auto;
+}
+.overlay.open{ display:flex }
+
+.modal{
+  width:100%; max-width:460px; background:var(--paper);
+  border-radius:20px; padding:24px 26px; margin:auto;
+}
+.modal h3{ margin:0 0 3px; font-size:17px; font-weight:600 }
+.modal .sub{ font-size:12px; color:var(--ink-faint); margin:0 0 18px }
+.modal-label{ font-size:13px; color:var(--ink-soft); margin:0 0 8px }
+
+/* แถบเลือกเปิด/ปิดความคิดเห็นในโมดัลเขียนโพสต์ */
+.ct-toggle{ display:flex; gap:8px; margin:14px 0 4px }
+.ct-opt{
+  flex:1; border:1px solid var(--line); background:#fff;
+  color:var(--ink-soft); border-radius:999px; padding:9px 12px; font-size:13px;
+}
+.ct-opt[aria-pressed="true"]{
+  background:var(--mint-deep); color:var(--mint-soft); border-color:var(--mint-deep);
+}
+
+.paper-in{ border-radius:6px; padding:14px; margin-bottom:4px }
+.paper-in textarea{
+  width:100%; background:transparent; border:none; resize:none;
+  font-size:14px; line-height:1.6; outline:none; color:inherit;
+}
+
+.modal-foot{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; margin-top:16px; flex-wrap:wrap;
+}
+.anon{ font-size:12px; color:var(--ink-faint) }
+.btn-row{ display:flex; gap:8px }
+
+.comment{ background:#fff; border-radius:12px; padding:11px 14px; margin-bottom:9px }
+.comment .who{ font-size:11px; color:var(--ink-faint); margin:0 0 3px }
+.comment p:last-child{ margin:0; font-size:14px }
+
+@media (max-width:760px){
+  .board{ flex-direction:column }
+  .side{ width:100%; border-radius:0 0 24px 24px; padding:16px }
+  .side h2,
+  .side .desc,
+  .side .who,
+  .side-label,
+  .range-btn{ display:none }
+  .side .avatar{ display:none }
+  .side .helpline{ margin-top:12px }
+  .main{ padding:18px 16px 40px }
+  .grid{ grid-template-columns:1fr }
+}

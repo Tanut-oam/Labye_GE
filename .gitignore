@@ -1,0 +1,17 @@
+node_modules/
+.env
+.env.local
+.firebase/
+.firebaserc
+dist/
+build/
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# ข้อมูลผู้เข้าร่วมวิจัย ห้าม commit เด็ดขาด
+data/
+*.csv
+*.xlsx

@@ -1,0 +1,76 @@
+/* หน้าเข้าสู่ระบบ สมัครสมาชิก ลืมรหัสผ่าน แบบวัด และหน้าสรุปผล */
+
+.auth-wrap{
+  min-height:100vh; display:flex;
+  align-items:center; justify-content:center; padding:24px;
+}
+
+.auth-card{
+  width:100%; max-width:380px; background:var(--paper);
+  border-radius:24px; padding:32px 28px;
+}
+.auth-card.wide{ max-width:520px }
+
+.auth-card .brand{ margin-bottom:24px }
+
+.field{ margin-bottom:14px }
+.field label{
+  display:block; font-size:13px; color:var(--ink-soft); margin-bottom:5px;
+}
+.field input,
+.field select{
+  width:100%; height:42px; padding:0 14px;
+  border:1px solid var(--line); border-radius:999px;
+  background:#fff; font-size:14px; color:var(--ink);
+}
+
+/* แถบความคืบหน้าของแบบวัด */
+.progress{
+  height:5px; background:var(--mood-ok); border-radius:999px;
+  overflow:hidden; margin-bottom:22px;
+}
+.progress span{
+  display:block; height:100%; background:var(--mint-deep);
+  width:5%; transition:width .25s;
+}
+
+.q-no{ font-size:12px; color:var(--ink-faint); margin:0 0 6px }
+.q-text{ font-size:18px; font-weight:500; margin:0 0 24px; line-height:1.5 }
+
+.scale{ display:flex; gap:8px; margin-bottom:8px }
+.scale button{
+  flex:1; height:52px; border:1px solid var(--line); border-radius:12px;
+  background:#fff; font-size:16px; color:var(--mood-ok-ink);
+}
+.scale button[aria-pressed="true"]{
+  background:var(--mint-deep); color:#fff; border-color:var(--mint-deep);
+}
+.scale-ends{
+  display:flex; justify-content:space-between;
+  font-size:11.5px; color:var(--ink-faint); margin-bottom:22px;
+}
+
+.quiz-nav{ display:flex; justify-content:space-between; gap:10px }
+
+/* หน้าสรุปคะแนน */
+.score-ring{
+  width:150px; height:150px; border-radius:50%; margin:8px auto 18px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  border:9px solid var(--mint-deep);
+}
+.score-ring .n{ font-size:38px; font-weight:600; line-height:1 }
+.score-ring .d{ font-size:13px; color:var(--ink-faint) }
+
+.level{ text-align:center; font-size:17px; font-weight:500; margin:0 0 6px }
+.level-note{
+  text-align:center; font-size:13px; color:var(--ink-soft); margin:0 0 22px;
+}
+
+/* แบบประเมินความพึงพอใจ */
+.sat-item{ margin-bottom:20px }
+.sat-item p{ margin:0 0 9px; font-size:14.5px }
+
+@media (max-width:760px){
+  .scale button{ height:46px; font-size:14px }
+  .auth-card{ padding:26px 20px }
+}

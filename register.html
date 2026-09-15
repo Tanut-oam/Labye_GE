@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>สมัครสมาชิก — ล้าบาย</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/auth.css">
+</head>
+<body data-page="register">
+<main class="auth-wrap">
+  <div class="auth-card">
+    <div class="brand"><span class="brand-mark">☺</span><span class="brand-name">สมัครสมาชิก</span></div>
+
+    <div class="field">
+      <label for="email">อีเมล</label>
+      <input id="email" type="email" autocomplete="email" placeholder="you@kkumail.com">
+    </div>
+    <div class="field">
+      <label for="password">รหัสผ่าน</label>
+      <input id="password" type="password" autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label for="password2">ยืนยันรหัสผ่าน</label>
+      <input id="password2" type="password" autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label for="faculty">คณะ</label>
+      <select id="faculty">
+        <option value="">เลือกคณะ</option>
+        <option>วิทยาศาสตร์</option>
+        <option>วิศวกรรมศาสตร์</option>
+        <option>ศึกษาศาสตร์</option>
+        <option>มนุษยศาสตร์และสังคมศาสตร์</option>
+        <option>อื่น ๆ</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="year">ชั้นปี</label>
+      <select id="year">
+        <option value="">เลือกชั้นปี</option>
+        <option>1</option><option>2</option><option>3</option>
+        <option>4</option><option>สูงกว่าปี 4</option>
+      </select>
+    </div>
+
+    <p class="msg" id="msg" role="status"></p>
+
+    <button class="btn-main" id="submit">สมัคร</button>
+    <a class="btn-ghost" href="index.html" style="display:flex;align-items:center;justify-content:center;text-decoration:none">กลับไปเข้าสู่ระบบ</a>
+  </div>
+</main>
+<script type="module" src="assets/js/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>กระดานให้กำลังใจ — ล้าบาย</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/board.css">
+</head>
+<body data-page="board">
+<div class="board">
+
+  <aside class="side">
+    <div class="brand"><span class="brand-mark">☺</span><span class="brand-name">ล้าบาย</span></div>
+
+    <div class="avatar">☺</div>
+    <p class="who">ไม่ระบุตัวตน</p>
+
+    <h2>กระดานให้กำลังใจ</h2>
+    <p class="desc">
+      พื้นที่ส่วนกลางให้นักศึกษาโพสต์ระบาย แบ่งปันกำลังใจ
+      และอ่านข้อความจากเพื่อนคนอื่นได้แบบไม่ระบุตัวตน
+    </p>
+
+    <p class="side-label">ช่วงเวลา</p>
+    <button class="range-btn" data-days="1" aria-pressed="true">วันนี้</button>
+    <button class="range-btn" data-days="7" aria-pressed="false">7 วันที่ผ่านมา</button>
+    <button class="range-btn" data-days="30" aria-pressed="false">30 วันที่ผ่านมา</button>
+
+    <div class="helpline">
+      <strong>สายด่วนสุขภาพจิต 1323</strong>
+      ต้องการความช่วยเหลือเพิ่มเติม โทรได้ตลอด 24 ชั่วโมง
+    </div>
+
+    <a class="btn-sm" href="satisfaction.html" style="margin-top:12px;text-align:center;text-decoration:none">แบบประเมินความพึงพอใจ</a>
+    <button class="btn-sm" id="logout" style="margin-top:7px">ออกจากระบบ</button>
+  </aside>
+
+  <div class="main">
+    <div class="topbar" id="moods"><span class="q">อยากอ่านความรู้สึกไหน?</span></div>
+    <div class="grid" id="grid"></div>
+    <p class="empty" id="empty" hidden>ยังไม่มีใครโพสต์ในหมวดนี้ — เริ่มจากเรื่องของคุณก็ได้</p>
+  </div>
+</div>
+
+<div class="overlay" id="ov-post">
+  <div class="modal" role="dialog" aria-label="เขียนโพสต์ใหม่">
+    <h3>วันนี้อยากแปะอะไรไว้?</h3>
+    <p class="sub">ไม่ต้องเรียบเรียงให้สวย แค่เป็นความรู้สึกของคุณ</p>
+
+    <p class="modal-label">ความรู้สึกตอนนี้</p>
+    <div class="topbar" id="post-moods" style="margin-bottom:16px"></div>
+
+    <p class="modal-label">เรื่องที่อยู่ในใจ</p>
+    <div class="paper-in" id="post-paper">
+      <textarea id="post-text" rows="4" placeholder="ฉันรู้สึก…" maxlength="500"></textarea>
+    </div>
+
+    <div class="ct-toggle" id="post-comments">
+      <button type="button" class="ct-opt" data-open="true" aria-pressed="true">เปิดความคิดเห็น</button>
+      <button type="button" class="ct-opt" data-open="false" aria-pressed="false">ปิดความคิดเห็น</button>
+    </div>
+
+    <p class="msg" id="post-msg" role="status"></p>
+
+    <div class="modal-foot">
+      <span class="anon">โพสต์แบบไม่ระบุตัวตน</span>
+      <div class="btn-row">
+        <button class="btn-sm" data-close="ov-post">ยกเลิก</button>
+        <button class="btn-sm primary" id="post-submit">แปะบนกระดาน</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ov-comment">
+  <div class="modal" role="dialog" aria-label="ข้อความให้กำลังใจ">
+    <div class="paper-in" id="cm-paper" style="margin-bottom:18px">
+      <p class="meta" id="cm-meta" style="font-size:11px;margin:0 0 8px"></p>
+      <p id="cm-body" style="margin:0;font-size:15px;line-height:1.55"></p>
+    </div>
+
+    <p class="modal-label" id="cm-count"></p>
+    <div id="cm-list" style="margin-bottom:14px"></div>
+
+    <div class="paper-in" style="background:#fff;border:1px solid var(--line)">
+      <textarea id="cm-text" rows="2" placeholder="เขียนข้อความให้กำลังใจ…" maxlength="300"></textarea>
+    </div>
+
+    <p class="msg" id="cm-msg" role="status"></p>
+
+    <div class="modal-foot">
+      <span class="anon">ตอบกลับแบบไม่ระบุตัวตน</span>
+      <div class="btn-row">
+        <button class="btn-sm" data-close="ov-comment">ปิด</button>
+        <button class="btn-sm primary" id="cm-submit">ส่งกำลังใจ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="assets/js/board.js"></script>
+</body>
+</html>

@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ล้าบาย — กระดานให้กำลังใจ (ต้นแบบ)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --mint:#9FE1CB; --mint-deep:#0F6E56; --mint-soft:#E1F5EE;
+  --cream:#F6F4EE; --paper:#FBFAF6; --line:#D9D6CC;
+  --ink:#2C2C2A; --ink-soft:#5F5E5A; --ink-faint:#8B8A83;
+  --bright:#FAEEDA; --bright-ink:#854F0B;
+  --ok:#F1EFE8; --ok-ink:#444441;
+  --upset:#FBEAF0; --upset-ink:#993556;
+  --sad:#E6F1FB; --sad-ink:#185FA5;
+  --anx:#EEEDFE; --anx-ink:#534AB7;
+  --calm:#E1F5EE; --calm-ink:#0F6E56;
+  --danger:#A32D2D;
+  --r:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Noto Sans Thai',system-ui,sans-serif;
+  background:var(--mint); color:var(--ink);
+  font-size:15px; line-height:1.6;
+  min-height:100vh;
+}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+:focus-visible{outline:2px solid var(--mint-deep);outline-offset:2px}
+.screen{display:none}
+.screen.active{display:block}
+
+/* ---------- หน้าฟอร์ม (login / register / forgot) ---------- */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.auth-card{width:100%;max-width:380px;background:var(--paper);border-radius:24px;padding:32px 28px}
+.brand{display:flex;align-items:center;gap:8px;margin-bottom:24px}
+.brand-mark{width:30px;height:30px;border-radius:9px;background:#FAC775;display:flex;align-items:center;justify-content:center;font-size:16px}
+.brand-name{font-size:20px;font-weight:600;color:var(--mint-deep)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;color:var(--ink-soft);margin-bottom:5px}
+.field input,.field select{
+  width:100%;height:42px;padding:0 14px;border:1px solid var(--line);
+  border-radius:999px;background:#fff;font-size:14px;color:var(--ink);
+}
+.btn-main{
+  width:100%;height:44px;border:none;border-radius:999px;
+  background:var(--mint-deep);color:var(--mint-soft);font-size:15px;font-weight:500;
+}
+.btn-main:hover{background:#0b5946}
+.btn-ghost{
+  width:100%;height:42px;border:1px solid var(--line);border-radius:999px;
+  background:#fff;color:var(--ink-soft);font-size:14px;margin-top:10px;
+}
+.link{background:none;border:none;color:var(--mint-deep);font-size:13px;padding:0;text-decoration:underline}
+.err{color:var(--danger);font-size:13px;margin:8px 0 0;min-height:20px}
+
+/* ---------- กระดาน ---------- */
+.board{display:flex;min-height:100vh}
+.side{
+  width:230px;flex-shrink:0;background:var(--cream);
+  border-radius:0 32px 32px 0;padding:22px 18px;display:flex;flex-direction:column;
+}
+.avatar{width:82px;height:82px;border-radius:50%;background:#D3D1C7;margin:6px auto 8px;display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff}
+.side h2{font-size:15px;font-weight:600;margin:14px 0 6px}
+.side p.desc{font-size:12px;color:var(--ink-soft);margin:0 0 20px}
+.side-label{font-size:12px;color:var(--ink-faint);margin:0 0 8px}
+.range-btn{width:100%;border:1px solid transparent;background:#fff;border-radius:999px;padding:8px;font-size:13px;color:var(--ok-ink);margin-bottom:7px}
+.range-btn[aria-pressed="true"]{background:#FAC775;color:var(--bright-ink)}
+.helpline{margin-top:auto;background:#fff;border-radius:12px;padding:11px 13px;font-size:11.5px;color:var(--ink-soft);line-height:1.5}
+.helpline strong{display:block;color:var(--danger);font-weight:600;font-size:13px}
+
+.main{flex:1;min-width:0;padding:24px 28px 48px}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.topbar .q{font-size:13px;color:var(--mint-deep);margin-right:4px}
+.mood{border:none;padding:9px 18px;border-radius:999px;font-size:13px;background:#fff;color:var(--ok-ink);opacity:.62}
+.mood[aria-pressed="true"]{opacity:1;font-weight:500}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+.note{border-radius:6px;padding:16px 16px 13px;min-height:152px;display:flex;flex-direction:column;position:relative;text-align:left;border:none;width:100%}
+.note .meta{font-size:11px;margin:0 0 8px;opacity:.85}
+.note .body{font-size:14px;line-height:1.55;margin:0;flex:1}
+.note .foot{display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-size:12px}
+.like{background:rgba(255,255,255,.7);border:none;border-radius:999px;padding:5px 13px;font-size:12px}
+.note-new{background:var(--paper);border:1.5px dashed var(--line);align-items:center;justify-content:center;text-align:center}
+.note-new .plus{font-size:26px;color:var(--ink-faint);line-height:1}
+.empty{font-size:13px;color:var(--mint-deep);margin:12px 2px}
+
+/* ---------- โมดัล ---------- */
+.overlay{position:fixed;inset:0;background:rgba(15,110,86,.38);display:none;align-items:center;justify-content:center;padding:20px;z-index:10;overflow:auto}
+.overlay.open{display:flex}
+.modal{width:100%;max-width:460px;background:var(--paper);border-radius:20px;padding:24px 26px;margin:auto}
+.modal h3{margin:0 0 3px;font-size:17px;font-weight:600}
+.modal .sub{font-size:12px;color:var(--ink-faint);margin:0 0 18px}
+.modal-label{font-size:13px;color:var(--ink-soft);margin:0 0 8px}
+.paper-in{border-radius:6px;padding:14px;margin-bottom:4px}
+.paper-in textarea{width:100%;background:transparent;border:none;resize:none;font-size:14px;line-height:1.6;outline:none;color:inherit}
+.modal-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;flex-wrap:wrap}
+.anon{font-size:12px;color:var(--ink-faint)}
+.btn-row{display:flex;gap:8px}
+.btn-sm{border-radius:999px;padding:9px 20px;font-size:13px;border:1px solid var(--line);background:#fff;color:var(--ink-soft)}
+.btn-sm.primary{background:var(--mint-deep);color:var(--mint-soft);border-color:var(--mint-deep)}
+.comment{background:#fff;border-radius:12px;padding:11px 14px;margin-bottom:9px}
+.comment .who{font-size:11px;color:var(--ink-faint);margin:0 0 3px}
+.comment p{margin:0;font-size:14px}
+
+/* ---------- แบบวัด ---------- */
+.quiz-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.quiz-card{width:100%;max-width:520px;background:var(--paper);border-radius:24px;padding:30px 28px}
+.progress{height:5px;background:var(--ok);border-radius:999px;overflow:hidden;margin-bottom:22px}
+.progress span{display:block;height:100%;background:var(--mint-deep);width:5%;transition:width .25s}
+.qno{font-size:12px;color:var(--ink-faint);margin:0 0 6px}
+.qtext{font-size:18px;font-weight:500;margin:0 0 24px;line-height:1.5}
+.scale{display:flex;gap:8px;margin-bottom:8px}
+.scale button{flex:1;height:52px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:16px;color:var(--ok-ink)}
+.scale button[aria-pressed="true"]{background:var(--mint-deep);color:#fff;border-color:var(--mint-deep)}
+.scale-ends{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink-faint);margin-bottom:22px}
+.quiz-nav{display:flex;justify-content:space-between;gap:10px}
+
+/* ---------- ผลลัพธ์ ---------- */
+.score-ring{width:150px;height:150px;border-radius:50%;margin:8px auto 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:9px solid var(--mint-deep)}
+.score-ring .n{font-size:38px;font-weight:600;line-height:1}
+.score-ring .d{font-size:13px;color:var(--ink-faint)}
+.level{text-align:center;font-size:17px;font-weight:500;margin:0 0 6px}
+.level-note{text-align:center;font-size:13px;color:var(--ink-soft);margin:0 0 22px}
+
+/* ---------- ความพึงพอใจ ---------- */
+.sat-item{margin-bottom:20px}
+.sat-item p{margin:0 0 9px;font-size:14.5px}
+
+@media (max-width:760px){
+  .board{flex-direction:column}
+  .side{width:100%;border-radius:0 0 24px 24px;padding:16px}
+  .side .desc,.side h2,.side-label,.range-btn{display:none}
+  .side .avatar{width:44px;height:44px;font-size:22px;margin:0}
+  .side-top{display:flex;align-items:center;gap:12px}
+  .helpline{margin-top:12px}
+  .main{padding:18px 16px 40px}
+  .grid{grid-template-columns:1fr}
+  .scale button{height:46px;font-size:14px}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ 1. เข้าสู่ระบบ ============ -->
+<section class="screen active" id="s-login">
+  <div class="auth-wrap"><div class="auth-card">
+    <div class="brand"><span class="brand-mark">☺</span><span class="brand-name">ล้าบาย</span></div>
+    <div class="field"><label for="li-email">อีเมล</label><input id="li-email" type="email" placeholder="you@kkumail.com"></div>
+    <div class="field"><label for="li-pass">รหัสผ่าน</label><input id="li-pass" type="password" placeholder="••••••••"></div>
+    <p class="err" id="li-err"></p>
+    <button class="btn-main" onclick="login()">เข้าสู่ระบบ</button>
+    <button class="btn-ghost" onclick="go('s-register')">สมัครสมาชิก</button>
+    <p style="text-align:center;margin:14px 0 0"><button class="link" onclick="go('s-forgot')">ลืมรหัสผ่าน</button></p>
+  </div></div>
+</section>
+
+<!-- ============ 2. สมัครสมาชิก ============ -->
+<section class="screen" id="s-register">
+  <div class="auth-wrap"><div class="auth-card">
+    <div class="brand"><span class="brand-mark">☺</span><span class="brand-name">สมัครสมาชิก</span></div>
+    <div class="field"><label for="rg-email">อีเมล</label><input id="rg-email" type="email" placeholder="you@kkumail.com"></div>
+    <div class="field"><label for="rg-p1">รหัสผ่าน</label><input id="rg-p1" type="password"></div>
+    <div class="field"><label for="rg-p2">ยืนยันรหัสผ่าน</label><input id="rg-p2" type="password"></div>
+    <div class="field"><label for="rg-fac">คณะ</label>
+      <select id="rg-fac"><option value="">เลือกคณะ</option><option>วิทยาศาสตร์</option><option>วิศวกรรมศาสตร์</option><option>ศึกษาศาสตร์</option><option>มนุษยศาสตร์และสังคมศาสตร์</option><option>อื่น ๆ</option></select>
+    </div>
+    <div class="field"><label for="rg-yr">ชั้นปี</label>
+      <select id="rg-yr"><option value="">เลือกชั้นปี</option><option>1</option><option>2</option><option>3</option><option>4</option><option>สูงกว่าปี 4</option></select>
+    </div>
+    <p class="err" id="rg-err"></p>
+    <button class="btn-main" onclick="register()">สมัคร</button>
+    <button class="btn-ghost" onclick="go('s-login')">กลับไปเข้าสู่ระบบ</button>
+  </div></div>
+</section>
+
+<!-- ============ 3. ลืมรหัสผ่าน ============ -->
+<section class="screen" id="s-forgot">
+  <div class="auth-wrap"><div class="auth-card">
+    <div class="brand"><span class="brand-mark">☺</span><span class="brand-name">ตั้งรหัสผ่านใหม่</span></div>
+    <div class="field"><label for="fg-email">อีเมล</label><input id="fg-email" type="email"></div>
+    <div class="field"><label for="fg-p1">รหัสผ่านใหม่</label><input id="fg-p1" type="password"></div>
+    <div class="field"><label for="fg-p2">ยืนยันรหัสผ่านใหม่</label><input id="fg-p2" type="password"></div>
+    <p class="err" id="fg-err"></p>
+    <button class="btn-main" onclick="resetPass()">ยืนยัน</button>
+    <button class="btn-ghost" onclick="go('s-login')">ยกเลิก</button>
+  </div></div>
+</section>
+
+<!-- ============ 4. แบบวัดความเครียด ============ -->
+<section class="screen" id="s-quiz">
+  <div class="quiz-wrap"><div class="quiz-card">
+    <div class="progress"><span id="qz-bar"></span></div>
+    <p class="qno" id="qz-no">ข้อ 1 จาก 20</p>
+    <p class="qtext" id="qz-text"></p>
+    <div class="scale" id="qz-scale"></div>
+    <div class="scale-ends"><span>น้อยที่สุด</span><span>มากที่สุด</span></div>
+    <p class="err" id="qz-err"></p>
+    <div class="quiz-nav">
+      <button class="btn-sm" onclick="quizBack()">ย้อนกลับ</button>
+      <button class="btn-sm primary" onclick="quizNext()" id="qz-next">ต่อไป</button>
+    </div>
+  </div></div>
+</section>
+
+<!-- ============ 5. สรุปคะแนน ============ -->
+<section class="screen" id="s-result">
+  <div class="quiz-wrap"><div class="quiz-card" style="text-align:center">
+    <p class="qno" style="margin-bottom:14px">ระดับความเครียด</p>
+    <div class="score-ring" id="rs-ring"><span class="n" id="rs-score">0</span><span class="d">จาก 100</span></div>
+    <p class="level" id="rs-level"></p>
+    <p class="level-note" id="rs-note"></p>
+    <div class="helpline" style="text-align:left;margin-bottom:20px">
+      <strong>สายด่วนสุขภาพจิต 1323</strong>
+      โทรฟรีตลอด 24 ชั่วโมง ถ้ารู้สึกว่ารับมือคนเดียวไม่ไหว
+    </div>
+    <button class="btn-main" onclick="go('s-board')">เข้าสู่กระดาน</button>
+  </div></div>
+</section>
+
+<!-- ============ 6. กระดานข้อความ ============ -->
+<section class="screen" id="s-board">
+  <div class="board">
+    <aside class="side">
+      <div class="side-top">
+        <div class="brand" style="margin:0"><span class="brand-mark">☺</span><span class="brand-name">ล้าบาย</span></div>
+      </div>
+      <div class="avatar">☺</div>
+      <p style="text-align:center;font-size:13px;color:var(--ink-soft);margin:0">ไม่ระบุตัวตน</p>
+      <h2>กระดานให้กำลังใจ</h2>
+      <p class="desc">พื้นที่ส่วนกลางให้นักศึกษาโพสต์ระบาย แบ่งปันกำลังใจ และอ่านข้อความจากเพื่อนคนอื่นแบบไม่ระบุตัวตน</p>
+      <p class="side-label">ช่วงเวลา</p>
+      <button class="range-btn" aria-pressed="true" onclick="setRange(this)">วันนี้</button>
+      <button class="range-btn" aria-pressed="false" onclick="setRange(this)">7 วันที่ผ่านมา</button>
+      <button class="range-btn" aria-pressed="false" onclick="setRange(this)">30 วันที่ผ่านมา</button>
+      <div class="helpline">
+        <strong>สายด่วนสุขภาพจิต 1323</strong>
+        ต้องการความช่วยเหลือเพิ่มเติม โทรได้ตลอด 24 ชั่วโมง
+      </div>
+      <button class="btn-sm" style="margin-top:12px" onclick="go('s-satisfaction')">ทำแบบประเมินความพึงพอใจ</button>
+      <button class="btn-sm" style="margin-top:7px" onclick="logout()">ออกจากระบบ</button>
+    </aside>
+    <div class="main">
+      <div class="topbar" id="bd-moods"><span class="q">อยากอ่านความรู้สึกไหน?</span></div>
+      <div class="grid" id="bd-grid"></div>
+      <p class="empty" id="bd-empty" style="display:none">ยังไม่มีใครโพสต์ในหมวดนี้ — เริ่มจากเรื่องของคุณก็ได้</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. ความพึงพอใจ ============ -->
+<section class="screen" id="s-satisfaction">
+  <div class="quiz-wrap"><div class="quiz-card">
+    <h3 style="margin:0 0 4px;font-size:18px;font-weight:600">แบบประเมินความพึงพอใจ</h3>
+    <p class="sub" style="font-size:13px;color:var(--ink-faint);margin:0 0 24px">ให้คะแนน 1 (น้อยที่สุด) ถึง 5 (มากที่สุด)</p>
+    <div id="sat-list"></div>
+    <p class="err" id="sat-err"></p>
+    <button class="btn-main" onclick="submitSat()">ส่งแบบประเมิน</button>
+    <button class="btn-ghost" onclick="go('s-board')">กลับไปกระดาน</button>
+  </div></div>
+</section>
+
+<!-- ============ โมดัลเขียนโพสต์ ============ -->
+<div class="overlay" id="ov-post">
+  <div class="modal">
+    <h3>วันนี้อยากแปะอะไรไว้?</h3>
+    <p class="sub">ไม่ต้องเรียบเรียงให้สวย แค่เป็นความรู้สึกของคุณ</p>
+    <p class="modal-label">ความรู้สึกตอนนี้</p>
+    <div class="topbar" id="pm-moods" style="margin-bottom:16px"></div>
+    <p class="modal-label">เรื่องที่อยู่ในใจ</p>
+    <div class="paper-in" id="pm-paper"><textarea id="pm-text" rows="4" placeholder="ฉันรู้สึก…"></textarea></div>
+    <p class="err" id="pm-err"></p>
+    <div class="modal-foot">
+      <span class="anon">โพสต์แบบไม่ระบุตัวตน</span>
+      <div class="btn-row">
+        <button class="btn-sm" onclick="closeModal('ov-post')">ยกเลิก</button>
+        <button class="btn-sm primary" onclick="submitPost()">แปะบนกระดาน</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ โมดัลคอมเมนต์ ============ -->
+<div class="overlay" id="ov-comment">
+  <div class="modal">
+    <div class="paper-in" id="cm-paper" style="margin-bottom:18px">
+      <p class="meta" id="cm-meta" style="font-size:11px;margin:0 0 8px"></p>
+      <p id="cm-body" style="margin:0;font-size:15px;line-height:1.55"></p>
+    </div>
+    <p class="modal-label" id="cm-count"></p>
+    <div id="cm-list" style="margin-bottom:14px"></div>
+    <div class="paper-in" style="background:#fff;border:1px solid var(--line)">
+      <textarea id="cm-text" rows="2" placeholder="เขียนข้อความให้กำลังใจ…"></textarea>
+    </div>
+    <p class="err" id="cm-err"></p>
+    <div class="modal-foot">
+      <span class="anon">ตอบกลับแบบไม่ระบุตัวตน</span>
+      <div class="btn-row">
+        <button class="btn-sm" onclick="closeModal('ov-comment')">ปิด</button>
+        <button class="btn-sm primary" onclick="submitComment()">ส่งกำลังใจ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== ข้อมูลจำลอง (ของจริงจะมาจากฐานข้อมูล) ===== */
+var MOODS=[
+  {k:"all",   label:"ทั้งหมด", bg:"#0F6E56", ink:"#E1F5EE"},
+  {k:"bright",label:"สดใส",   bg:"#FAEEDA", ink:"#854F0B"},
+  {k:"ok",    label:"เฉย ๆ",  bg:"#F1EFE8", ink:"#444441"},
+  {k:"upset", label:"ไม่พอใจ", bg:"#FBEAF0", ink:"#993556"},
+  {k:"sad",   label:"เศร้า",   bg:"#E6F1FB", ink:"#185FA5"},
+  {k:"anx",   label:"กังวล",   bg:"#EEEDFE", ink:"#534AB7"},
+  {k:"calm",  label:"สงบ",    bg:"#E1F5EE", ink:"#0F6E56"}
+];
+var posts=[
+  {id:1,mood:"calm",  time:"25 นาทีที่แล้ว",  body:"ผ่านไปอีกวันแล้ว วันนี้ก็ทำได้ดีนะ", likes:18, liked:false, comments:[{t:"สู้ ๆ นะ วันนี้ก็เก่งแล้ว"},{t:"อ่านแล้วใจดีขึ้นเลย"}]},
+  {id:2,mood:"anx",   time:"38 นาทีที่แล้ว",  body:"พรุ่งนี้มีเรื่องให้ลุ้น ขอค่อย ๆ ไปทีละก้าว", likes:32, liked:false, comments:[{t:"ทีละก้าวก็ถึงเหมือนกัน"}]},
+  {id:3,mood:"sad",   time:"1 ชั่วโมงที่แล้ว", body:"วันนี้เหนื่อยนิดหน่อย แค่มีคนฟังก็คงดี", likes:46, liked:false, comments:[{t:"เราฟังอยู่นะ"},{t:"เหนื่อยได้ พักก่อนก็ได้"}]},
+  {id:4,mood:"upset", time:"2 ชั่วโมงที่แล้ว", body:"ทำไมอาจารย์ชอบสั่งงานตอนจะสอบ", likes:61, liked:false, comments:[{t:"เข้าใจเลย ช่วงนี้งานถล่มมาก"}]},
+  {id:5,mood:"bright",time:"3 ชั่วโมงที่แล้ว", body:"กาแฟแก้วโปรดกับเช้าที่ไม่ต้องรีบ", likes:24, liked:false, comments:[]},
+  {id:6,mood:"ok",    time:"5 ชั่วโมงที่แล้ว", body:"วันธรรมดา ๆ ที่ผ่านไปเงียบ ๆ ก็ดีเหมือนกัน", likes:9, liked:false, comments:[]}
+];
+var QUESTIONS=[];
+for(var i=1;i<=20;i++){QUESTIONS.push("ข้อความข้อที่ "+i+" ของแบบวัดความเครียด (รอใส่ข้อความจริงจากแบบวัดมาตรฐาน)");}
+var SAT=[
+  "เว็บไซต์ใช้งานง่าย ไม่สับสน",
+  "สีและตัวอักษรอ่านสบายตา ทำให้รู้สึกผ่อนคลาย",
+  "รู้สึกปลอดภัยที่จะโพสต์เรื่องของตัวเอง",
+  "การอ่านข้อความของคนอื่นช่วยให้รู้สึกดีขึ้น",
+  "โดยรวมพอใจกับเว็บไซต์นี้"
+];
+
+/* ===== นำทาง ===== */
+function go(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='s-quiz') startQuiz();
+  if(id==='s-board') renderBoard();
+  if(id==='s-satisfaction') renderSat();
+}
+function logout(){ go('s-login'); }
+function moodOf(k){ for(var i=0;i<MOODS.length;i++){ if(MOODS[i].k===k) return MOODS[i]; } return MOODS[2]; }
+
+/* ===== 1-3 ฟอร์ม ===== */
+function show(id,msg,good){var e=document.getElementById(id);e.textContent=msg;e.style.color=good?'#0F6E56':'#A32D2D';}
+function login(){
+  var em=document.getElementById('li-email').value.trim(), pw=document.getElementById('li-pass').value;
+  if(!em||!pw){ return show('li-err','กรอกอีเมลและรหัสผ่านให้ครบก่อน'); }
+  if(em.indexOf('@')<0){ return show('li-err','รูปแบบอีเมลยังไม่ถูกต้อง'); }
+  show('li-err','');
+  go('s-board');
+}
+function register(){
+  var em=document.getElementById('rg-email').value.trim();
+  var p1=document.getElementById('rg-p1').value, p2=document.getElementById('rg-p2').value;
+  var fac=document.getElementById('rg-fac').value, yr=document.getElementById('rg-yr').value;
+  if(!em||!p1||!p2||!fac||!yr){ return show('rg-err','กรอกข้อมูลให้ครบทุกช่องก่อน'); }
+  if(em.indexOf('@')<0){ return show('rg-err','รูปแบบอีเมลยังไม่ถูกต้อง'); }
+  if(p1.length<8){ return show('rg-err','รหัสผ่านต้องยาวอย่างน้อย 8 ตัวอักษร'); }
+  if(p1!==p2){ return show('rg-err','รหัสผ่านทั้งสองช่องไม่ตรงกัน'); }
+  show('rg-err','');
+  go('s-quiz');
+}
+function resetPass(){
+  var em=document.getElementById('fg-email').value.trim();
+  var p1=document.getElementById('fg-p1').value, p2=document.getElementById('fg-p2').value;
+  if(!em||!p1||!p2){ return show('fg-err','กรอกข้อมูลให้ครบก่อน'); }
+  if(p1.length<8){ return show('fg-err','รหัสผ่านต้องยาวอย่างน้อย 8 ตัวอักษร'); }
+  if(p1!==p2){ return show('fg-err','รหัสผ่านทั้งสองช่องไม่ตรงกัน'); }
+  show('fg-err','ตั้งรหัสผ่านใหม่แล้ว',true);
+  setTimeout(function(){ go('s-login'); },900);
+}
+
+/* ===== 4 แบบวัด ===== */
+var qi=0, answers=[];
+function startQuiz(){ qi=0; answers=[]; renderQ(); }
+function renderQ(){
+  document.getElementById('qz-no').textContent='ข้อ '+(qi+1)+' จาก 20';
+  document.getElementById('qz-text').textContent=QUESTIONS[qi];
+  document.getElementById('qz-bar').style.width=((qi+1)/20*100)+'%';
+  document.getElementById('qz-err').textContent='';
+  document.getElementById('qz-next').textContent = qi===19 ? 'ดูผลลัพธ์' : 'ต่อไป';
+  var s=document.getElementById('qz-scale'); s.innerHTML='';
+  for(var v=1;v<=5;v++){
+    var b=document.createElement('button');
+    b.textContent=v; b.setAttribute('aria-pressed', answers[qi]===v);
+    b.onclick=(function(val){return function(){ answers[qi]=val; renderQ(); };})(v);
+    s.appendChild(b);
+  }
+}
+function quizBack(){ if(qi>0){ qi--; renderQ(); } else { go('s-register'); } }
+function quizNext(){
+  if(!answers[qi]){ document.getElementById('qz-err').textContent='เลือกคำตอบก่อนไปข้อถัดไป'; return; }
+  if(qi<19){ qi++; renderQ(); } else { showResult(); }
+}
+function showResult(){
+  var total=0; for(var i=0;i<20;i++){ total+=answers[i]; }
+  var lv, note;
+  if(total<=40){ lv='ความเครียดระดับน้อย'; note='อยู่ในเกณฑ์ที่รับมือได้ ลองแวะอ่านกระดานเพื่อเติมกำลังใจกัน'; }
+  else if(total<=60){ lv='ความเครียดระดับปานกลาง'; note='เป็นระดับที่พบได้ทั่วไปในช่วงเรียน ลองหาเวลาพักและพูดคุยกับคนที่ไว้ใจ'; }
+  else if(total<=80){ lv='ความเครียดระดับสูง'; note='ถ้ารู้สึกว่ากระทบการเรียนหรือการนอน การคุยกับนักจิตวิทยาของมหาวิทยาลัยจะช่วยได้'; }
+  else { lv='ความเครียดระดับรุนแรง'; note='ไม่ต้องรับมือคนเดียวก็ได้ ลองติดต่อสายด่วน 1323 หรือหน่วยให้คำปรึกษาของมหาวิทยาลัย'; }
+  document.getElementById('rs-score').textContent=total;
+  document.getElementById('rs-level').textContent=lv;
+  document.getElementById('rs-note').textContent=note;
+  go('s-result');
+}
+
+/* ===== 6 กระดาน ===== */
+var filter='all';
+function renderMoodBar(){
+  var bar=document.getElementById('bd-moods');
+  bar.innerHTML='<span class="q">อยากอ่านความรู้สึกไหน?</span>';
+  MOODS.forEach(function(m){
+    var b=document.createElement('button');
+    b.className='mood'; b.textContent=m.label;
+    b.style.background=m.bg; b.style.color=m.ink;
+    b.setAttribute('aria-pressed', filter===m.k);
+    b.onclick=function(){ filter=m.k; renderBoard(); };
+    bar.appendChild(b);
+  });
+}
+function renderBoard(){
+  renderMoodBar();
+  var grid=document.getElementById('bd-grid');
+  var list = filter==='all' ? posts : posts.filter(function(p){ return p.mood===filter; });
+  grid.innerHTML='';
+  var add=document.createElement('button');
+  add.className='note note-new';
+  add.innerHTML='<span class="plus">+</span><p style="font-size:15px;margin:6px 0 4px">มีอะไรอยู่ในใจไหม?</p>'+
+    '<p style="font-size:12px;color:var(--ink-faint);line-height:1.5;margin:0 0 10px">เรื่องของคุณอาจทำให้ใครอีกคนรู้สึกว่าเขาไม่ได้อยู่คนเดียว</p>'+
+    '<span class="btn-sm" style="display:inline-block">แปะเรื่องราวของคุณ</span>';
+  add.onclick=openPost;
+  grid.appendChild(add);
+  list.forEach(function(p){
+    var m=moodOf(p.mood);
+    var el=document.createElement('div');
+    el.className='note'; el.style.background=m.bg; el.style.color=m.ink;
+    el.innerHTML='<p class="meta">'+m.label+' · '+p.time+'</p><p class="body">'+esc(p.body)+'</p>';
+    var foot=document.createElement('div'); foot.className='foot';
+    var like=document.createElement('button');
+    like.className='like'; like.style.color=m.ink;
+    like.textContent=(p.liked?'♥ ':'♡ ')+p.likes;
+    like.onclick=function(){ p.liked=!p.liked; p.likes+=p.liked?1:-1; renderBoard(); };
+    var cm=document.createElement('button');
+    cm.className='like'; cm.style.color=m.ink; cm.style.background='transparent';
+    cm.textContent='ตอบกลับ '+p.comments.length;
+    cm.onclick=function(){ openComment(p); };
+    foot.appendChild(like); foot.appendChild(cm); el.appendChild(foot);
+    grid.appendChild(el);
+  });
+  document.getElementById('bd-empty').style.display = list.length ? 'none' : 'block';
+}
+function setRange(btn){
+  document.querySelectorAll('.range-btn').forEach(function(b){ b.setAttribute('aria-pressed','false'); });
+  btn.setAttribute('aria-pressed','true');
+}
+function esc(s){ return s.replace(/[<>&]/g,function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c]; }); }
+
+/* ===== โมดัลโพสต์ ===== */
+var pmMood='anx';
+function openPost(){
+  var bar=document.getElementById('pm-moods'); bar.innerHTML='';
+  MOODS.filter(function(m){ return m.k!=='all'; }).forEach(function(m){
+    var b=document.createElement('button');
+    b.className='mood'; b.textContent=m.label; b.style.background=m.bg; b.style.color=m.ink;
+    b.setAttribute('aria-pressed', pmMood===m.k);
+    b.onclick=function(){ pmMood=m.k; openPost(); };
+    bar.appendChild(b);
+  });
+  var m=moodOf(pmMood);
+  document.getElementById('pm-paper').style.background=m.bg;
+  document.getElementById('pm-text').style.color=m.ink;
+  document.getElementById('ov-post').classList.add('open');
+}
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function submitPost(){
+  var t=document.getElementById('pm-text').value.trim();
+  if(!t){ return show('pm-err','เขียนข้อความก่อนโพสต์'); }
+  if(t.length<10){ return show('pm-err','เขียนอีกนิดได้ไหม อย่างน้อย 10 ตัวอักษร'); }
+  show('pm-err','ผ่านการกลั่นกรองแล้ว กำลังแปะขึ้นกระดาน',true);
+  posts.unshift({id:Date.now(),mood:pmMood,time:'เมื่อสักครู่',body:t,likes:0,liked:false,comments:[]});
+  setTimeout(function(){
+    document.getElementById('pm-text').value=''; show('pm-err','');
+    closeModal('ov-post'); filter='all'; renderBoard();
+  },700);
+}
+
+/* ===== โมดัลคอมเมนต์ ===== */
+var curPost=null;
+function openComment(p){
+  curPost=p;
+  var m=moodOf(p.mood);
+  document.getElementById('cm-paper').style.background=m.bg;
+  document.getElementById('cm-meta').style.color=m.ink;
+  document.getElementById('cm-body').style.color=m.ink;
+  document.getElementById('cm-meta').textContent=m.label+' · '+p.time;
+  document.getElementById('cm-body').textContent=p.body;
+  renderComments();
+  document.getElementById('ov-comment').classList.add('open');
+}
+function renderComments(){
+  document.getElementById('cm-count').textContent='ข้อความให้กำลังใจ '+curPost.comments.length+' ข้อความ';
+  var box=document.getElementById('cm-list'); box.innerHTML='';
+  curPost.comments.forEach(function(c){
+    var d=document.createElement('div'); d.className='comment';
+    d.innerHTML='<p class="who">ไม่ระบุตัวตน</p><p></p>';
+    d.querySelector('p:last-child').textContent=c.t;
+    box.appendChild(d);
+  });
+}
+function submitComment(){
+  var t=document.getElementById('cm-text').value.trim();
+  if(!t){ return show('cm-err','เขียนข้อความก่อนส่ง'); }
+  show('cm-err','');
+  curPost.comments.push({t:t});
+  document.getElementById('cm-text').value='';
+  renderComments(); renderBoard();
+}
+
+/* ===== 7 ความพึงพอใจ ===== */
+var satAns=[];
+function renderSat(){
+  var box=document.getElementById('sat-list'); box.innerHTML='';
+  SAT.forEach(function(q,idx){
+    var wrap=document.createElement('div'); wrap.className='sat-item';
+    var p=document.createElement('p'); p.textContent=q; wrap.appendChild(p);
+    var sc=document.createElement('div'); sc.className='scale';
+    for(var v=1;v<=5;v++){
+      var b=document.createElement('button'); b.textContent=v;
+      b.setAttribute('aria-pressed', satAns[idx]===v);
+      b.onclick=(function(i,val){ return function(){ satAns[i]=val; document.getElementById('sat-err').textContent=''; renderSat(); };})(idx,v);
+      sc.appendChild(b);
+    }
+    wrap.appendChild(sc); box.appendChild(wrap);
+  });
+}
+function submitSat(){
+  for(var i=0;i<SAT.length;i++){
+    if(!satAns[i]){ return show('sat-err','ยังตอบไม่ครบทุกข้อ'); }
+  }
+  show('sat-err','ส่งแบบประเมินแล้ว ขอบคุณที่ช่วยกันทำให้เว็บนี้ดีขึ้น',true);
+}
+</script>
+</body>
+</html>
