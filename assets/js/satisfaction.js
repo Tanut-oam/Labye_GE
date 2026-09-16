@@ -15,8 +15,15 @@ const el = {
   text: document.getElementById("q-text"),
   scale: document.getElementById("scale"),
   back: document.getElementById("back"),
+  cancel: document.getElementById("cancel"),
   next: document.getElementById("next")
 };
+
+el.cancel.addEventListener("click", event => {
+  if (answers.some(answer => answer !== null) && !window.confirm("ยกเลิกแบบประเมินความพึงพอใจ? คำตอบที่เลือกไว้จะไม่ถูกบันทึก")) {
+    event.preventDefault();
+  }
+});
 
 function render() {
   el.no.textContent = `ข้อ ${index + 1} จาก ${SAT_ITEMS.length}`;

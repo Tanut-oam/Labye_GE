@@ -8,16 +8,28 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/base.css">
-<link rel="stylesheet" href="assets/css/board.css">
+<link rel="stylesheet" href="assets/css/board.css?v=20260916.4">
 </head>
 <body data-page="board">
 <div class="board">
 
-  <aside class="side">
-    <div class="brand"><span class="brand-mark">☺</span><span class="brand-name">ล้าบาย</span></div>
+  <aside class="side" id="side-menu">
+    <div class="side-bar">
+      <div class="brand"><span class="brand-mark">☺</span><span class="brand-name">ล้าบาย</span></div>
+      <button class="mobile-side-toggle" id="side-toggle" type="button" aria-expanded="false" aria-controls="side-content">
+        <span class="sr-only">เปิดเมนู</span><span class="menu-chevron" aria-hidden="true">👇</span>
+      </button>
+    </div>
 
-    <div class="avatar">☺</div>
-    <p class="who">ไม่ระบุตัวตน</p>
+    <div class="side-content" id="side-content">
+
+    <button class="avatar profile-trigger" id="profile-trigger" type="button" aria-expanded="false" aria-controls="profile-picker" aria-label="เปลี่ยนโปรไฟล์ผลไม้">
+      <span id="profile-emoji" aria-hidden="true">🍊</span><span class="avatar-edit" aria-hidden="true">✦</span>
+    </button>
+    <p class="who" id="profile-name">ส้มใจดี</p>
+    <div class="profile-picker" id="profile-picker" hidden>
+      <p>เลือกโปรไฟล์ผลไม้</p><div class="fruit-options" id="fruit-options"></div>
+    </div>
 
     <h2>กระดานให้กำลังใจ</h2>
     <p class="desc">
@@ -32,7 +44,7 @@
       </div>
       <p id="latest-stress-meta" class="stress-meta"></p>
       <div class="stress-actions">
-        <a class="btn-sm primary" href="stress-test.html?phase=post">ประเมินอีกครั้ง</a>
+        <a class="btn-sm primary" href="stress-test.html?phase=post&amp;v=20260916.4">ประเมินอีกครั้ง</a>
         <button class="btn-sm" id="open-stress-history" type="button">ดูประวัติ</button>
       </div>
     </section>
@@ -47,8 +59,9 @@
       ต้องการความช่วยเหลือเพิ่มเติม โทรได้ตลอด 24 ชั่วโมง
     </div>
 
-    <a class="btn-sm" href="satisfaction.html" style="margin-top:12px;text-align:center;text-decoration:none">แบบประเมินความพึงพอใจ</a>
-    <button class="btn-sm" id="logout" style="margin-top:7px">ออกจากระบบ</button>
+    <a class="btn-sm" href="satisfaction.html?v=20260916.4" style="margin-top:12px;text-align:center;text-decoration:none">แบบประเมินความพึงพอใจ</a>
+      <button class="btn-sm" id="logout" type="button" style="margin-top:7px">ออกจากระบบ</button>
+    </div>
   </aside>
 
   <div class="main">
@@ -67,7 +80,7 @@
     <p class="sub" id="history-description">ผลทั้งหมดเป็นข้อมูลส่วนตัว มีเพียงคุณที่เปิดดูได้</p>
     <div class="history-status" id="history-status" role="status" aria-live="polite">กำลังโหลดประวัติ…</div>
     <div class="history-list" id="stress-history-list"></div>
-    <div class="history-foot"><a class="btn-main" href="stress-test.html?phase=post">ทำแบบประเมินอีกครั้ง</a></div>
+    <div class="history-foot"><a class="btn-main" href="stress-test.html?phase=post&amp;v=20260916.4">ทำแบบประเมินอีกครั้ง</a></div>
   </div>
 </div>
 
@@ -81,7 +94,7 @@
 
     <p class="modal-label">เรื่องที่อยู่ในใจ</p>
     <div class="paper-in" id="post-paper">
-      <textarea id="post-text" rows="4" placeholder="ฉันรู้สึก…" maxlength="500"></textarea>
+      <textarea id="post-text" rows="4" placeholder="ฉันรู้สึก…" minlength="3" maxlength="500"></textarea>
     </div>
 
     <div class="ct-toggle" id="post-comments">
@@ -94,8 +107,8 @@
     <div class="modal-foot">
       <span class="anon">โพสต์แบบไม่ระบุตัวตน</span>
       <div class="btn-row">
-        <button class="btn-sm" data-close="ov-post">ยกเลิก</button>
-        <button class="btn-sm primary" id="post-submit">แปะบนกระดาน</button>
+        <button class="btn-sm" type="button" data-close="ov-post">ยกเลิก</button>
+        <button class="btn-sm primary" type="button" id="post-submit">แปะบนกระดาน</button>
       </div>
     </div>
   </div>
@@ -112,7 +125,7 @@
     <div id="cm-list" style="margin-bottom:14px"></div>
 
     <div class="paper-in" style="background:#fff;border:1px solid var(--line)">
-      <textarea id="cm-text" rows="2" placeholder="เขียนข้อความให้กำลังใจ…" maxlength="300"></textarea>
+      <textarea id="cm-text" rows="2" placeholder="เขียนข้อความให้กำลังใจ…" minlength="3" maxlength="300"></textarea>
     </div>
 
     <p class="msg" id="cm-msg" role="status"></p>
@@ -120,13 +133,13 @@
     <div class="modal-foot">
       <span class="anon">ตอบกลับแบบไม่ระบุตัวตน</span>
       <div class="btn-row">
-        <button class="btn-sm" data-close="ov-comment">ปิด</button>
-        <button class="btn-sm primary" id="cm-submit">ส่งกำลังใจ</button>
+        <button class="btn-sm" type="button" data-close="ov-comment">ปิด</button>
+        <button class="btn-sm primary" type="button" id="cm-submit">ส่งกำลังใจ</button>
       </div>
     </div>
   </div>
 </div>
 
-<script type="module" src="assets/js/board.js"></script>
+<script type="module" src="assets/js/board.js?v=20260916.4"></script>
 </body>
 </html>

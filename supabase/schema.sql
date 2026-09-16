@@ -15,14 +15,19 @@ create table if not exists public.profiles (
   id         uuid primary key references auth.users(id) on delete cascade,
   faculty    text not null,
   year       text not null,
+  fruit_avatar text not null default 'orange',
   created_at timestamptz not null default now()
 );
+alter table public.profiles add column if not exists fruit_avatar text not null default 'orange';
+alter table public.profiles drop constraint if exists profiles_fruit_avatar_check;
+alter table public.profiles add constraint profiles_fruit_avatar_check
+  check (fruit_avatar in ('orange','apple','grape','watermelon','strawberry','lemon'));
 
 create table if not exists public.posts (
   id            uuid primary key default gen_random_uuid(),
   user_id       uuid not null references auth.users(id) on delete cascade,
   mood          text not null,
-  body          text not null check (char_length(body) between 10 and 500),
+  body          text not null check (char_length(body) between 3 and 500),
   comments_open boolean not null default true,
   like_count    int not null default 0,
   comment_count int not null default 0,
@@ -35,10 +40,18 @@ create table if not exists public.comments (
   id         uuid primary key default gen_random_uuid(),
   post_id    uuid not null references public.posts(id) on delete cascade,
   user_id    uuid not null references auth.users(id) on delete cascade,
-  body       text not null check (char_length(body) between 10 and 300),
+  body       text not null check (char_length(body) between 3 and 300),
   created_at timestamptz not null default now()
 );
 create index if not exists comments_post_idx on public.comments (post_id, created_at);
+
+-- ปรับฐานข้อมูลเดิมที่เคยบังคับขั้นต่ำ 10 ตัวอักษร ให้เหลือ 3 ตัวอักษร
+alter table public.posts drop constraint if exists posts_body_check;
+alter table public.posts add constraint posts_body_check
+  check (char_length(body) between 3 and 500);
+alter table public.comments drop constraint if exists comments_body_check;
+alter table public.comments add constraint comments_body_check
+  check (char_length(body) between 3 and 300);
 
 -- รหัสหลักคือ (post_id, user_id) จึงกดใจซ้ำไม่ได้โดยธรรมชาติ
 create table if not exists public.likes (

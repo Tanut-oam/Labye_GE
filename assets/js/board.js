@@ -4,8 +4,8 @@ import { supabase } from "./supabase-config.js";
 import { requireAuth } from "./guard.js";
 import { MOODS, ALL_MOOD, moodOf, levelOf } from "./data.js";
 import { timeAgo, openModal, bindCloseButtons } from "./ui.js";
-import { initPostModal } from "./post.js";
-import { openCommentModal } from "./comment.js";
+import { initPostModal } from "./post.js?v=20260916.4";
+import { openCommentModal } from "./comment.js?v=20260916.4";
 
 let user = null;
 let moodFilter = "all";
@@ -16,7 +16,95 @@ const grid = document.getElementById("grid");
 const empty = document.getElementById("empty");
 const historyList = document.getElementById("stress-history-list");
 const historyStatus = document.getElementById("history-status");
+const sideMenu = document.getElementById("side-menu");
+const sideToggle = document.getElementById("side-toggle");
+const profileTrigger = document.getElementById("profile-trigger");
+const profilePicker = document.getElementById("profile-picker");
+const fruitOptions = document.getElementById("fruit-options");
 let stressHistory = [];
+
+const FRUIT_PROFILES = [
+  { key: "orange", emoji: "🍊", name: "ส้มใจดี" },
+  { key: "apple", emoji: "🍎", name: "แอปเปิลสดใส" },
+  { key: "grape", emoji: "🍇", name: "องุ่นใจเย็น" },
+  { key: "watermelon", emoji: "🍉", name: "แตงโมสบายใจ" },
+  { key: "strawberry", emoji: "🍓", name: "สตรอว์เบอร์รีอ่อนโยน" },
+  { key: "lemon", emoji: "🍋", name: "เลมอนร่าเริง" }
+];
+let selectedFruit = FRUIT_PROFILES[0].key;
+
+function renderFruitProfile() {
+  const fruit = FRUIT_PROFILES.find(item => item.key === selectedFruit) || FRUIT_PROFILES[0];
+  document.getElementById("profile-emoji").textContent = fruit.emoji;
+  document.getElementById("profile-name").textContent = fruit.name;
+  profileTrigger.setAttribute("aria-label", `เปลี่ยนโปรไฟล์ ปัจจุบัน${fruit.name}`);
+  fruitOptions.innerHTML = "";
+  FRUIT_PROFILES.forEach(item => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "fruit-option";
+    button.textContent = item.emoji;
+    button.title = item.name;
+    button.setAttribute("aria-label", item.name);
+    button.setAttribute("aria-pressed", String(item.key === selectedFruit));
+    button.addEventListener("click", () => selectFruitProfile(item.key));
+    fruitOptions.appendChild(button);
+  });
+}
+
+async function selectFruitProfile(key) {
+  selectedFruit = key;
+  localStorage.setItem(`labye-fruit-${user.id}`, key);
+  renderFruitProfile();
+  profilePicker.hidden = true;
+  profileTrigger.setAttribute("aria-expanded", "false");
+  await supabase.from("profiles").update({ fruit_avatar: key }).eq("id", user.id);
+}
+
+async function initFruitProfile() {
+  const saved = localStorage.getItem(`labye-fruit-${user.id}`);
+  if (FRUIT_PROFILES.some(item => item.key === saved)) {
+    selectedFruit = saved;
+  } else {
+    const { data } = await supabase.from("profiles").select("fruit_avatar").eq("id", user.id).maybeSingle();
+    if (FRUIT_PROFILES.some(item => item.key === data?.fruit_avatar)) selectedFruit = data.fruit_avatar;
+    else selectedFruit = FRUIT_PROFILES[user.id.charCodeAt(0) % FRUIT_PROFILES.length].key;
+  }
+  renderFruitProfile();
+}
+
+function setSideMenu(open) {
+  sideMenu.classList.toggle("menu-open", open);
+  sideToggle.setAttribute("aria-expanded", String(open));
+  sideToggle.querySelector(".sr-only").textContent = open ? "ปิดเมนู" : "เปิดเมนู";
+  sideToggle.querySelector(".menu-chevron").textContent = open ? "👆" : "👇";
+  document.body.classList.toggle("side-menu-open", open);
+}
+
+profileTrigger.addEventListener("click", () => {
+  const open = profilePicker.hidden;
+  profilePicker.hidden = !open;
+  profileTrigger.setAttribute("aria-expanded", String(open));
+});
+
+document.addEventListener("click", event => {
+  if (!profilePicker.hidden && !event.target.closest("#profile-picker,#profile-trigger")) {
+    profilePicker.hidden = true;
+    profileTrigger.setAttribute("aria-expanded", "false");
+  }
+});
+
+sideToggle.addEventListener("click", () => {
+  setSideMenu(sideToggle.getAttribute("aria-expanded") !== "true");
+});
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && sideMenu.classList.contains("menu-open")) setSideMenu(false);
+});
+
+window.matchMedia("(min-width: 761px)").addEventListener("change", event => {
+  if (event.matches) setSideMenu(false);
+});
 
 function formatAssessmentDate(value) {
   return new Intl.DateTimeFormat("th-TH", {
@@ -124,32 +212,49 @@ function renderGrid() {
   const list = moodFilter === "all" ? posts : posts.filter(p => p.mood === moodFilter);
   grid.innerHTML = "";
   grid.appendChild(newPostCard());
-  list.forEach(p => grid.appendChild(postCard(p)));
+  list.forEach((p, index) => grid.appendChild(postCard(p, index + 1)));
   empty.textContent = loadFailed
     ? "โหลดโพสต์ไม่สำเร็จ ลองรีเฟรชหน้าอีกครั้ง หรือเช็กการเชื่อมต่ออินเทอร์เน็ต"
     : "ยังไม่มีใครโพสต์ในหมวดนี้ — เริ่มจากเรื่องของคุณก็ได้";
   empty.hidden = list.length > 0 && !loadFailed;
 }
 
+// แสดงโพสต์ที่บันทึกสำเร็จทันที ไม่ต้องรอโหลดข้อมูลรอบใหม่จากเครือข่าย
+function showCreatedPost(createdPost) {
+  if (!createdPost) return loadPosts();
+  posts = [createdPost, ...posts.filter(post => post.id !== createdPost.id)];
+  moodFilter = "all";
+  loadFailed = false;
+  renderMoodBar();
+  renderGrid();
+  grid.querySelector('.note:not(.note-new)')?.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
 function newPostCard() {
   const el = document.createElement("button");
   el.className = "note note-new";
+  el.type = "button";
+  el.style.setProperty("--delay", "0ms");
+  el.setAttribute("aria-label", "เขียนโพสต์ใหม่บนกระดานให้กำลังใจ");
   el.innerHTML =
     '<span class="plus">+</span>' +
-    '<p style="font-size:15px;margin:6px 0 4px">มีอะไรอยู่ในใจไหม?</p>' +
-    '<p style="font-size:12px;color:var(--ink-faint);line-height:1.5;margin:0 0 10px">' +
+    '<p class="note-new-title">มีอะไรอยู่ในใจไหม?</p>' +
+    '<p class="note-new-copy">' +
     'เรื่องของคุณอาจทำให้ใครอีกคนรู้สึกว่าเขาไม่ได้อยู่คนเดียว</p>' +
     '<span class="btn-sm">แปะเรื่องราวของคุณ</span>';
   el.addEventListener("click", () => openModal("ov-post"));
   return el;
 }
 
-function postCard(p) {
+function postCard(p, index) {
   const m = moodOf(p.mood);
   const el = document.createElement("div");
   el.className = "note";
   el.style.background = m.bg;
   el.style.color = m.ink;
+  const tilts = ["1deg", "-.8deg", ".65deg", "-1.1deg", "-.55deg", ".85deg"];
+  el.style.setProperty("--tilt", tilts[(index - 1) % tilts.length]);
+  el.style.setProperty("--delay", `${Math.min(index * 65, 390)}ms`);
 
   const meta = document.createElement("p");
   meta.className = "meta";
@@ -163,15 +268,19 @@ function postCard(p) {
   foot.className = "foot";
 
   const like = document.createElement("button");
-  like.className = "like";
+  like.type = "button";
+  like.className = `like${p.liked ? " liked" : ""}`;
   like.style.color = m.ink;
   like.textContent = `${p.liked ? "♥" : "♡"} ${p.like_count || 0}`;
-  like.addEventListener("click", () => toggleLike(p));
+  like.setAttribute("aria-pressed", String(Boolean(p.liked)));
+  like.setAttribute("aria-label", `${p.liked ? "เลิกส่ง" : "ส่ง"}กำลังใจ ปัจจุบัน ${p.like_count || 0} ครั้ง`);
+  like.addEventListener("click", () => toggleLike(p, like));
 
   // เจ้าของโพสต์เลือกปิดความคิดเห็นได้ โพสต์เก่าที่ไม่มีฟิลด์นี้ถือว่าเปิดไว้
   const commentsOpen = p.comments_open !== false;
   if (commentsOpen) {
     const reply = document.createElement("button");
+    reply.type = "button";
     reply.className = "reply";
     reply.style.color = m.ink;
     reply.textContent = `ตอบกลับ ${p.comment_count || 0}`;
@@ -190,7 +299,8 @@ function postCard(p) {
 
 // ── กดใจ ──────────────────────────────────────────────
 // ตัวนับ like บนโพสต์ถูกดูแลด้วย trigger ฝั่งฐานข้อมูล จึงแค่ insert/delete แถวใน likes
-async function toggleLike(p) {
+async function toggleLike(p, button) {
+  button.disabled = true;
   try {
     if (p.liked) {
       const { error } = await supabase.from("likes")
@@ -203,9 +313,17 @@ async function toggleLike(p) {
       if (error) throw error;
       p.like_count = (p.like_count || 0) + 1; p.liked = true;
     }
-    renderGrid();
+    button.textContent = `${p.liked ? "♥" : "♡"} ${p.like_count || 0}`;
+    button.classList.toggle("liked", p.liked);
+    button.setAttribute("aria-pressed", String(p.liked));
+    button.setAttribute("aria-label", `${p.liked ? "เลิกส่ง" : "ส่ง"}กำลังใจ ปัจจุบัน ${p.like_count || 0} ครั้ง`);
+    button.classList.remove("pop");
+    void button.offsetWidth;
+    button.classList.add("pop");
   } catch (e) {
     console.error(e);
+  } finally {
+    button.disabled = false;
   }
 }
 
@@ -215,6 +333,7 @@ document.querySelectorAll(".range-btn").forEach(btn => {
     document.querySelectorAll(".range-btn").forEach(b => b.setAttribute("aria-pressed", "false"));
     btn.setAttribute("aria-pressed", "true");
     days = Number(btn.dataset.days);
+    setSideMenu(false);
     loadPosts();
   });
 });
@@ -225,6 +344,7 @@ document.getElementById("logout").addEventListener("click", async () => {
 });
 
 document.getElementById("open-stress-history").addEventListener("click", async event => {
+  setSideMenu(false);
   openModal("ov-stress-history");
   document.querySelector('#ov-stress-history [data-close]').focus();
   await loadStressHistory();
@@ -235,8 +355,10 @@ bindCloseButtons();
 
 requireAuth().then(u => {
   user = u;
+  initFruitProfile();
   renderMoodBar();
-  initPostModal(user, loadPosts);
+  document.addEventListener("labye:post-created", event => showCreatedPost(event.detail));
+  initPostModal(user);
   loadStressHistory().then(() => {
     if (location.hash === "#stress-history") {
       openModal("ov-stress-history");

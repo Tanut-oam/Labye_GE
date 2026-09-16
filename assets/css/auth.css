@@ -74,7 +74,9 @@
   font-size:11.5px; color:var(--ink-faint); margin-bottom:22px;
 }
 
-.quiz-nav{ display:flex; justify-content:space-between; gap:10px }
+.quiz-nav{ display:flex; justify-content:space-between; align-items:center; gap:10px }
+.quiz-nav .quiz-cancel{ color:var(--danger); text-decoration:none; text-align:center }
+.quiz-nav .quiz-cancel:hover{ background:#fff4f1; border-color:#e5b9ae }
 
 /* หน้าสรุปคะแนน */
 .score-ring{

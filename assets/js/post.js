@@ -3,12 +3,11 @@
 import { supabase } from "./supabase-config.js";
 import { MOODS, moodOf } from "./data.js";
 import { setMsg, closeModal } from "./ui.js";
-import { moderate, RISK_NOTICE } from "./moderation.js";
+import { moderate, RISK_NOTICE } from "./moderation.js?v=20260916.4";
 
 let selected = "anx";
 let commentsOpen = true;
 let user = null;
-let onDone = null;
 
 const paper = () => document.getElementById("post-paper");
 const textarea = () => document.getElementById("post-text");
@@ -51,12 +50,26 @@ async function submit() {
 
   const btn = document.getElementById("post-submit");
   btn.disabled = true;
-  const { error } = await supabase.from("posts").insert({
+  const createdPost = {
+    id: crypto.randomUUID(),
     user_id: user.id,
     mood: selected,
     body: text,
     comments_open: commentsOpen,
-    hidden: false
+    hidden: false,
+    created_at: new Date().toISOString(),
+    like_count: 0,
+    comment_count: 0,
+    liked: false
+  };
+  const { error } = await supabase.from("posts").insert({
+    id: createdPost.id,
+    user_id: createdPost.user_id,
+    mood: createdPost.mood,
+    body: createdPost.body,
+    comments_open: createdPost.comments_open,
+    hidden: createdPost.hidden,
+    created_at: createdPost.created_at
   });
   if (error) {
     console.error(error);
@@ -66,14 +79,13 @@ async function submit() {
   }
   textarea().value = "";
   setMsg("post-msg", "");
+  document.dispatchEvent(new CustomEvent("labye:post-created", { detail: createdPost }));
   closeModal("ov-post");
-  await onDone();
   btn.disabled = false;
 }
 
-export function initPostModal(currentUser, reload) {
+export function initPostModal(currentUser) {
   user = currentUser;
-  onDone = reload;
   renderMoodPicker();
   paintPaper();
   renderCommentsToggle();

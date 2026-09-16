@@ -16,6 +16,7 @@ LaBye should feel like a quiet, friendly corner on campus: warm enough to invite
 - Noto Sans Thai is the primary typeface. Body text stays at a readable 15–16px with generous Thai line height.
 - Cards use rounded paper surfaces. Primary actions use `--mint-deep`; warnings use `--danger` and always include text.
 - Motion is brief and functional. `prefers-reduced-motion` removes nonessential transitions.
+- Board posts resemble real notes from the Figma direction: near-square paper, a translucent tape strip, gentle alternating rotation, and a small lift on hover. Entrance motion staggers once when a result set appears; liking a post animates only its button so the board does not jump.
 
 ## Interaction Principles
 
@@ -37,4 +38,3 @@ LaBye should feel like a quiet, friendly corner on campus: warm enough to invite
 - Assessment wording and score thresholds come from the maintained project proposal.
 - Results support self-reflection and do not present a medical diagnosis.
 - High stress results keep the 1323 mental health helpline visible.
-

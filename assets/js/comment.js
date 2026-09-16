@@ -3,7 +3,7 @@
 import { supabase } from "./supabase-config.js";
 import { moodOf } from "./data.js";
 import { setMsg, openModal } from "./ui.js";
-import { moderate } from "./moderation.js";
+import { moderate } from "./moderation.js?v=20260916.4";
 
 let current = null;
 let user = null;

@@ -18,8 +18,16 @@ const el = {
   text: document.getElementById("q-text"),
   scale: document.getElementById("scale"),
   back: document.getElementById("back"),
+  cancel: document.getElementById("cancel"),
   next: document.getElementById("next")
 };
+
+el.cancel.hidden = phase !== "post";
+el.cancel.addEventListener("click", event => {
+  if (answers.some(answer => answer !== null) && !window.confirm("ยกเลิกแบบประเมินครั้งนี้? คำตอบที่เลือกไว้จะไม่ถูกบันทึก")) {
+    event.preventDefault();
+  }
+});
 
 function render() {
   el.no.textContent = `ข้อ ${index + 1} จาก ${QUESTIONS.length}`;
