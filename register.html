@@ -27,7 +27,36 @@
       <div class="field"><label for="email">อีเมล</label><input id="email" type="email" autocomplete="email" placeholder="you@kkumail.com" required><p class="field-error" id="email-error"></p></div>
       <div class="field"><label for="password">รหัสผ่าน</label><input id="password" type="password" autocomplete="new-password" minlength="8" required><p class="field-help">อย่างน้อย 8 ตัวอักษร</p><p class="field-error" id="password-error"></p></div>
       <div class="field"><label for="password2">ยืนยันรหัสผ่าน</label><input id="password2" type="password" autocomplete="new-password" required><p class="field-error" id="password2-error"></p></div>
-      <div class="field"><label for="faculty">คณะ</label><select id="faculty" required><option value="">เลือกคณะ</option><option>วิทยาศาสตร์</option><option>วิศวกรรมศาสตร์</option><option>ศึกษาศาสตร์</option><option>มนุษยศาสตร์และสังคมศาสตร์</option><option>อื่น ๆ</option></select><p class="field-error" id="faculty-error"></p></div>
+      <div class="field">
+        <label for="faculty">คณะหรือวิทยาลัย</label>
+        <select id="faculty" required>
+          <option value="">เลือกคณะหรือวิทยาลัย</option>
+          <option>คณะเกษตรศาสตร์</option>
+          <option>คณะเทคโนโลยี</option>
+          <option>คณะวิศวกรรมศาสตร์</option>
+          <option>คณะวิทยาศาสตร์</option>
+          <option>คณะสถาปัตยกรรมศาสตร์</option>
+          <option>วิทยาลัยการคอมพิวเตอร์</option>
+          <option>คณะพยาบาลศาสตร์</option>
+          <option>คณะแพทยศาสตร์</option>
+          <option>คณะเทคนิคการแพทย์</option>
+          <option>คณะสาธารณสุขศาสตร์</option>
+          <option>คณะทันตแพทยศาสตร์</option>
+          <option>คณะเภสัชศาสตร์</option>
+          <option>คณะสัตวแพทยศาสตร์</option>
+          <option>คณะศึกษาศาสตร์</option>
+          <option>คณะมนุษยศาสตร์และสังคมศาสตร์</option>
+          <option>คณะบริหารธุรกิจและการบัญชี</option>
+          <option>คณะศิลปกรรมศาสตร์</option>
+          <option>คณะเศรษฐศาสตร์</option>
+          <option>คณะนิติศาสตร์</option>
+          <option>วิทยาลัยการปกครองท้องถิ่น (กิจการและนโยบายสาธารณะ)</option>
+          <option>บัณฑิตวิทยาลัย</option>
+          <option>วิทยาลัยนานาชาติ</option>
+          <option>คณะสหวิทยาการ (วิทยาเขตหนองคาย)</option>
+        </select>
+        <p class="field-error" id="faculty-error"></p>
+      </div>
       <div class="field"><label for="year">ชั้นปี</label><select id="year" required><option value="">เลือกชั้นปี</option><option>1</option><option>2</option><option>3</option><option>4</option><option>สูงกว่าปี 4</option></select><p class="field-error" id="year-error"></p></div>
       <button class="btn-main" id="submit" type="button">เริ่มทำแบบประเมิน</button>
       <a class="btn-ghost" href="index.html">กลับไปเข้าสู่ระบบ</a>

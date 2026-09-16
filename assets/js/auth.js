@@ -60,7 +60,7 @@ function validateAccount() {
   if (p1.length < 8) fieldError("password", "รหัสผ่านต้องยาวอย่างน้อย 8 ตัวอักษร");
   if (!p2) fieldError("password2", "กรอกยืนยันรหัสผ่าน");
   else if (p1 !== p2) fieldError("password2", "รหัสผ่านทั้งสองช่องไม่ตรงกัน");
-  if (!faculty) fieldError("faculty", "เลือกคณะ");
+  if (!faculty) fieldError("faculty", "เลือกคณะหรือวิทยาลัย");
   if (!year) fieldError("year", "เลือกชั้นปี");
 
   const firstInvalid = document.querySelector('[aria-invalid="true"]');
