@@ -74,6 +74,22 @@
 
 .main{ flex:1; min-width:0; margin-left:284px; padding:42px clamp(24px,3.2vw,52px) 64px }
 
+.feed-tabs{
+  display:flex; width:max-content; max-width:100%; gap:6px; padding:5px; margin:0 0 20px;
+  border:1px solid rgba(15,110,86,.1); border-radius:999px; background:rgba(255,255,255,.48);
+  overflow:auto; scrollbar-width:none; scrollbar-color:transparent transparent;
+}
+.feed-tabs::-webkit-scrollbar{ display:none }
+.feed-tab{
+  flex:0 0 auto; min-height:40px; border:0; border-radius:999px; padding:8px 16px;
+  background:transparent; color:var(--ink-soft); font-size:12.5px;
+  transition:background-color .18s ease,color .18s ease,transform .18s ease;
+}
+.feed-tab:hover{ transform:translateY(-1px); color:var(--mint-deep) }
+.feed-tab[aria-pressed="true"]{ background:var(--paper); color:var(--mint-deep); font-weight:600; box-shadow:0 5px 14px rgba(49,91,78,.1) }
+.board-status{ min-height:22px; margin:-20px 3px 12px; color:var(--danger); font-size:12px }
+.board-status.ok{ color:var(--success) }
+
 .topbar{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:32px }
 .topbar .q{ width:100%; font-size:13px; color:var(--mint-deep); margin:0 0 1px 3px; font-weight:500 }
 
@@ -122,7 +138,7 @@
 }
 .note .foot{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-top:18px; font-size:12px }
 
-.like,.reply{
+.like,.reply,.post-delete{
   min-height:44px; border:none; border-radius:999px; padding:9px 16px;
   font-size:12px; transition:transform .16s ease,background-color .16s ease,box-shadow .16s ease;
 }
@@ -133,6 +149,9 @@
 .like.liked{ background:rgba(255,255,255,.94); font-weight:600 }
 .like.pop{ animation:heart-pop .34s cubic-bezier(.2,.9,.3,1.35) }
 .reply-closed{ font-size:12px; opacity:.6; overflow-wrap:anywhere; word-break:break-word }
+.post-delete{ margin-left:auto; background:rgba(255,255,255,.52); color:var(--danger) }
+.post-delete:hover{ background:var(--paper); transform:translateY(-2px) }
+.post-delete.confirming{ background:var(--danger); color:var(--paper); font-weight:600 }
 
 .note-new{
   overflow:hidden; background:rgba(251,250,246,.78); border:1.5px dashed rgba(64,105,91,.42);
@@ -192,8 +211,12 @@
 .btn-row{ display:flex; gap:8px }
 
 .comment{ min-width:0; max-width:100%; overflow:hidden; background:#fff; border-radius:12px; padding:11px 14px; margin-bottom:9px }
+.comment-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:3px }
 .comment .who{ font-size:11px; color:var(--ink-faint); margin:0 0 3px }
 .comment p:last-child{ margin:0; font-size:14px }
+.comment-delete{ border:0; background:transparent; color:var(--danger); padding:5px 7px; border-radius:8px; font-size:11px }
+.comment-delete:hover{ background:var(--mood-upset) }
+.comment-delete.confirming{ background:var(--danger); color:var(--paper) }
 
 .history-modal{ max-width:560px; max-height:min(680px,calc(100vh - 40px)); display:flex; flex-direction:column }
 .history-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:18px }
@@ -262,6 +285,8 @@
   .side .helpline{ margin-top:12px }
   .stress-summary{ margin:10px 0 14px }
   .main{ margin-left:0; padding:96px 17px 44px }
+  .feed-tabs{ width:100%; margin-bottom:16px }
+  .feed-tab{ flex:1; padding-inline:12px }
   body.side-menu-open{ overflow:hidden }
   .topbar{ gap:8px; margin-bottom:26px }
   .mood{ min-height:42px; padding:8px 15px }

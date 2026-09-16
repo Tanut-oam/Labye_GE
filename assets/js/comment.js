@@ -3,7 +3,8 @@
 import { supabase } from "./supabase-config.js";
 import { moodOf } from "./data.js";
 import { setMsg, openModal } from "./ui.js";
-import { moderate } from "./moderation.js?v=20260916.4";
+import { moderate } from "./moderation.js?v=20260916.5";
+import { fruitProfile } from "./fruit-profiles.js?v=20260916.5";
 
 let current = null;
 let user = null;
@@ -11,30 +12,72 @@ let onDone = null;
 let bound = false;
 
 async function renderComments() {
-  const { data, error } = await supabase
-    .from("comments")
-    .select("body, created_at")
-    .eq("post_id", current.id)
-    .order("created_at", { ascending: true });
-  const items = error ? [] : (data || []);
-  if (error) console.error(error);
-
-  document.getElementById("cm-count").textContent =
-    `ข้อความให้กำลังใจ ${items.length} ข้อความ`;
-
+  const count = document.getElementById("cm-count");
   const box = document.getElementById("cm-list");
+  count.textContent = "กำลังโหลดข้อความให้กำลังใจ…";
   box.innerHTML = "";
+  const { data, error } = await supabase.rpc("get_post_comments", {
+    p_post_id: current.id
+  });
+  const items = error ? [] : (data || []);
+  if (error) {
+    console.error(error);
+    count.textContent = "โหลดความคิดเห็นไม่สำเร็จ ลองปิดแล้วเปิดใหม่อีกครั้ง";
+    return;
+  }
+
+  count.textContent = `ข้อความให้กำลังใจ ${items.length} ข้อความ`;
+
   items.forEach(c => {
     const el = document.createElement("div");
     el.className = "comment";
+    const head = document.createElement("div");
+    head.className = "comment-head";
     const who = document.createElement("p");
     who.className = "who";
-    who.textContent = "ไม่ระบุตัวตน";
+    const fruit = fruitProfile(c.author_avatar);
+    who.textContent = `${fruit.emoji} ${fruit.name}`;
+    head.appendChild(who);
+    if (c.is_own) {
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "comment-delete";
+      remove.textContent = "ลบ";
+      remove.setAttribute("aria-label", "ลบความคิดเห็นของฉัน");
+      remove.addEventListener("click", () => deleteComment(c.id, remove));
+      head.appendChild(remove);
+    }
     const body = document.createElement("p");
     body.textContent = c.body;
-    el.append(who, body);
+    el.append(head, body);
     box.appendChild(el);
   });
+}
+
+async function deleteComment(id, button) {
+  if (button.dataset.confirm !== "true") {
+    button.dataset.confirm = "true";
+    button.textContent = "ยืนยันลบ";
+    button.classList.add("confirming");
+    setTimeout(() => {
+      if (!button.isConnected) return;
+      button.dataset.confirm = "false";
+      button.textContent = "ลบ";
+      button.classList.remove("confirming");
+    }, 4000);
+    return;
+  }
+  button.disabled = true;
+  const { error } = await supabase.from("comments").delete().eq("id", id);
+  if (error) {
+    console.error(error);
+    setMsg("cm-msg", "ลบความคิดเห็นไม่สำเร็จ ลองใหม่อีกครั้ง");
+    button.disabled = false;
+    return;
+  }
+  current.comment_count = Math.max((current.comment_count || 1) - 1, 0);
+  await renderComments();
+  await onDone();
 }
 
 async function submit() {
@@ -80,6 +123,6 @@ export async function openCommentModal(post, currentUser, reload) {
     bound = true;
   }
 
-  await renderComments();
   openModal("ov-comment");
+  await renderComments();
 }

@@ -2,12 +2,13 @@
 
 import { supabase } from "./supabase-config.js";
 import { MOODS, moodOf } from "./data.js";
-import { setMsg, closeModal } from "./ui.js";
-import { moderate, RISK_NOTICE } from "./moderation.js?v=20260916.4";
+import { setMsg, closeModal, openModal } from "./ui.js";
+import { moderate, RISK_NOTICE } from "./moderation.js?v=20260916.5";
 
 let selected = "anx";
 let commentsOpen = true;
 let user = null;
+let submitting = false;
 
 const paper = () => document.getElementById("post-paper");
 const textarea = () => document.getElementById("post-text");
@@ -42,6 +43,7 @@ function paintPaper() {
 }
 
 async function submit() {
+  if (submitting) return;
   const text = textarea().value.trim();
   const check = moderate(text);
 
@@ -49,39 +51,47 @@ async function submit() {
   if (check.risky) setMsg("post-msg", RISK_NOTICE, true);
 
   const btn = document.getElementById("post-submit");
+  submitting = true;
   btn.disabled = true;
-  const createdPost = {
-    id: crypto.randomUUID(),
+  btn.setAttribute("aria-busy", "true");
+  btn.textContent = "กำลังแปะ…";
+  const { data: createdPost, error } = await supabase.from("posts").insert({
     user_id: user.id,
     mood: selected,
     body: text,
-    comments_open: commentsOpen,
-    hidden: false,
-    created_at: new Date().toISOString(),
-    like_count: 0,
-    comment_count: 0,
-    liked: false
-  };
-  const { error } = await supabase.from("posts").insert({
-    id: createdPost.id,
-    user_id: createdPost.user_id,
-    mood: createdPost.mood,
-    body: createdPost.body,
-    comments_open: createdPost.comments_open,
-    hidden: createdPost.hidden,
-    created_at: createdPost.created_at
-  });
+    comments_open: commentsOpen
+  }).select("id,user_id,mood,body,comments_open,created_at,like_count,comment_count").single();
   if (error) {
     console.error(error);
     setMsg("post-msg", "โพสต์ไม่สำเร็จ ลองใหม่อีกครั้ง");
+    submitting = false;
     btn.disabled = false;
+    btn.removeAttribute("aria-busy");
+    btn.textContent = "แปะบนกระดาน";
     return;
   }
   textarea().value = "";
   setMsg("post-msg", "");
-  document.dispatchEvent(new CustomEvent("labye:post-created", { detail: createdPost }));
-  closeModal("ov-post");
+  submitting = false;
   btn.disabled = false;
+  btn.removeAttribute("aria-busy");
+  btn.textContent = "แปะบนกระดาน";
+  document.dispatchEvent(new CustomEvent("labye:post-created", {
+    detail: { ...createdPost, liked: false }
+  }));
+  closeModal("ov-post");
+}
+
+export function openPostModal() {
+  const btn = document.getElementById("post-submit");
+  if (!submitting) {
+    btn.disabled = false;
+    btn.removeAttribute("aria-busy");
+    btn.textContent = "แปะบนกระดาน";
+  }
+  setMsg("post-msg", "");
+  openModal("ov-post");
+  textarea().focus();
 }
 
 export function initPostModal(currentUser) {

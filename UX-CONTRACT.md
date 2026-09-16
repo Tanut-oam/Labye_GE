@@ -36,6 +36,14 @@
 - History is newest first and shows the score difference from the immediately preceding assessment.
 - Loading, empty, and recoverable error states remain in the history surface.
 
+## Board Ownership and Identity
+
+- The board can be filtered to all posts, posts liked by the current user, or posts authored by the current user; mood and time filters continue to apply.
+- Comments show only the author's selected fruit profile. Email, faculty, year, and user ID are never exposed in the comment response.
+- Owners can delete their own posts and comments after an explicit inline confirmation. Database RLS remains the final authorization boundary.
+- Deleting a post removes its comments and likes through database foreign-key cascades and removes the card from the board immediately.
+- A successful post resets its submission state so another post can be created without reloading the page.
+
 ## Data and Failure Behavior
 
 - Passwords and assessment answers are not stored in localStorage, sessionStorage, query strings, or logs.

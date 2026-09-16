@@ -4,16 +4,19 @@ import { supabase } from "./supabase-config.js";
 import { requireAuth } from "./guard.js";
 import { MOODS, ALL_MOOD, moodOf, levelOf } from "./data.js";
 import { timeAgo, openModal, bindCloseButtons } from "./ui.js";
-import { initPostModal } from "./post.js?v=20260916.4";
-import { openCommentModal } from "./comment.js?v=20260916.4";
+import { initPostModal, openPostModal } from "./post.js?v=20260916.5";
+import { openCommentModal } from "./comment.js?v=20260916.5";
+import { FRUIT_PROFILES, fruitProfile } from "./fruit-profiles.js?v=20260916.5";
 
 let user = null;
 let moodFilter = "all";
+let viewFilter = "all";
 let days = 1;
 let posts = [];
 
 const grid = document.getElementById("grid");
 const empty = document.getElementById("empty");
+const boardStatus = document.getElementById("board-status");
 const historyList = document.getElementById("stress-history-list");
 const historyStatus = document.getElementById("history-status");
 const sideMenu = document.getElementById("side-menu");
@@ -24,18 +27,10 @@ const fruitOptions = document.getElementById("fruit-options");
 let stressHistory = [];
 let stressHistoryLoaded = false;
 
-const FRUIT_PROFILES = [
-  { key: "orange", emoji: "🍊", name: "ส้มใจดี" },
-  { key: "apple", emoji: "🍎", name: "แอปเปิลสดใส" },
-  { key: "grape", emoji: "🍇", name: "องุ่นใจเย็น" },
-  { key: "watermelon", emoji: "🍉", name: "แตงโมสบายใจ" },
-  { key: "strawberry", emoji: "🍓", name: "สตรอว์เบอร์รีอ่อนโยน" },
-  { key: "lemon", emoji: "🍋", name: "เลมอนร่าเริง" }
-];
 let selectedFruit = FRUIT_PROFILES[0].key;
 
 function renderFruitProfile() {
-  const fruit = FRUIT_PROFILES.find(item => item.key === selectedFruit) || FRUIT_PROFILES[0];
+  const fruit = fruitProfile(selectedFruit);
   document.getElementById("profile-emoji").textContent = fruit.emoji;
   document.getElementById("profile-name").textContent = fruit.name;
   profileTrigger.setAttribute("aria-label", `เปลี่ยนโปรไฟล์ ปัจจุบัน${fruit.name}`);
@@ -228,15 +223,37 @@ function renderMoodBar() {
   });
 }
 
+function renderFeedTabs() {
+  document.querySelectorAll(".feed-tab").forEach(button => {
+    button.setAttribute("aria-pressed", String(button.dataset.view === viewFilter));
+  });
+}
+
+document.querySelectorAll(".feed-tab").forEach(button => {
+  button.addEventListener("click", () => {
+    viewFilter = button.dataset.view;
+    renderFeedTabs();
+    renderGrid();
+  });
+});
+
 // ── การ์ดโพสต์ ────────────────────────────────────────
 function renderGrid() {
-  const list = moodFilter === "all" ? posts : posts.filter(p => p.mood === moodFilter);
+  let list = posts;
+  if (viewFilter === "liked") list = list.filter(post => post.liked);
+  if (viewFilter === "mine") list = list.filter(post => post.user_id === user.id);
+  if (moodFilter !== "all") list = list.filter(post => post.mood === moodFilter);
   grid.innerHTML = "";
   grid.appendChild(newPostCard());
   list.forEach((p, index) => grid.appendChild(postCard(p, index + 1)));
+  const emptyCopy = {
+    all: "ยังไม่มีใครโพสต์ในหมวดนี้ — เริ่มจากเรื่องของคุณก็ได้",
+    liked: "ยังไม่มีโพสต์ที่คุณกดถูกใจในช่วงเวลานี้",
+    mine: "คุณยังไม่ได้โพสต์ในช่วงเวลานี้"
+  };
   empty.textContent = loadFailed
     ? "โหลดโพสต์ไม่สำเร็จ ลองรีเฟรชหน้าอีกครั้ง หรือเช็กการเชื่อมต่ออินเทอร์เน็ต"
-    : "ยังไม่มีใครโพสต์ในหมวดนี้ — เริ่มจากเรื่องของคุณก็ได้";
+    : emptyCopy[viewFilter];
   empty.hidden = list.length > 0 && !loadFailed;
 }
 
@@ -245,8 +262,10 @@ function showCreatedPost(createdPost) {
   if (!createdPost) return loadPosts();
   posts = [createdPost, ...posts.filter(post => post.id !== createdPost.id)];
   moodFilter = "all";
+  viewFilter = "all";
   loadFailed = false;
   renderMoodBar();
+  renderFeedTabs();
   renderGrid();
   grid.querySelector('.note:not(.note-new)')?.scrollIntoView({ behavior: "smooth", block: "center" });
 }
@@ -263,7 +282,7 @@ function newPostCard() {
     '<p class="note-new-copy">' +
     'เรื่องของคุณอาจทำให้ใครอีกคนรู้สึกว่าเขาไม่ได้อยู่คนเดียว</p>' +
     '<span class="btn-sm">แปะเรื่องราวของคุณ</span>';
-  el.addEventListener("click", () => openModal("ov-post"));
+  el.addEventListener("click", openPostModal);
   return el;
 }
 
@@ -314,8 +333,50 @@ function postCard(p, index) {
     foot.append(like, closed);
   }
 
+  if (p.user_id === user.id) {
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "post-delete";
+    remove.textContent = "ลบโพสต์";
+    remove.setAttribute("aria-label", "ลบโพสต์ของฉัน");
+    remove.addEventListener("click", () => deletePost(p, remove));
+    foot.appendChild(remove);
+  }
+
   el.append(meta, body, foot);
   return el;
+}
+
+function setBoardStatus(message, ok = false) {
+  boardStatus.textContent = message;
+  boardStatus.classList.toggle("ok", ok);
+}
+
+async function deletePost(post, button) {
+  if (button.dataset.confirm !== "true") {
+    button.dataset.confirm = "true";
+    button.textContent = "ยืนยันลบ";
+    button.classList.add("confirming");
+    setTimeout(() => {
+      if (!button.isConnected) return;
+      button.dataset.confirm = "false";
+      button.textContent = "ลบโพสต์";
+      button.classList.remove("confirming");
+    }, 4000);
+    return;
+  }
+  button.disabled = true;
+  setBoardStatus("กำลังลบโพสต์…");
+  const { error } = await supabase.from("posts").delete().eq("id", post.id);
+  if (error) {
+    console.error(error);
+    setBoardStatus("ลบโพสต์ไม่สำเร็จ ลองใหม่อีกครั้ง");
+    button.disabled = false;
+    return;
+  }
+  posts = posts.filter(item => item.id !== post.id);
+  setBoardStatus("ลบโพสต์แล้ว", true);
+  renderGrid();
 }
 
 // ── กดใจ ──────────────────────────────────────────────
@@ -341,6 +402,7 @@ async function toggleLike(p, button) {
     button.classList.remove("pop");
     void button.offsetWidth;
     button.classList.add("pop");
+    if (viewFilter === "liked" && !p.liked) renderGrid();
   } catch (e) {
     console.error(e);
   } finally {
@@ -378,6 +440,7 @@ requireAuth().then(u => {
   user = u;
   initFruitProfile();
   renderMoodBar();
+  renderFeedTabs();
   document.addEventListener("labye:post-created", event => showCreatedPost(event.detail));
   initPostModal(user);
   loadLatestStress();

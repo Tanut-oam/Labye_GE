@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://xvpyjgopvhkbraumianp.supabase.co" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/base.css">
-<link rel="stylesheet" href="assets/css/board.css?v=20260916.4">
+<link rel="stylesheet" href="assets/css/board.css?v=20260916.5">
 </head>
 <body data-page="board">
 <div class="board">
@@ -67,7 +67,13 @@
   </aside>
 
   <div class="main">
+    <nav class="feed-tabs" aria-label="เลือกชุดโพสต์">
+      <button class="feed-tab" type="button" data-view="all" aria-pressed="true">โพสต์ทั้งหมด</button>
+      <button class="feed-tab" type="button" data-view="liked" aria-pressed="false">♥ ที่ถูกใจ</button>
+      <button class="feed-tab" type="button" data-view="mine" aria-pressed="false">โพสต์ของฉัน</button>
+    </nav>
     <div class="topbar" id="moods"><span class="q">อยากอ่านความรู้สึกไหน?</span></div>
+    <p class="board-status" id="board-status" role="status" aria-live="polite"></p>
     <div class="grid" id="grid"></div>
     <p class="empty" id="empty" hidden>ยังไม่มีใครโพสต์ในหมวดนี้ — เริ่มจากเรื่องของคุณก็ได้</p>
   </div>
@@ -133,7 +139,7 @@
     <p class="msg" id="cm-msg" role="status"></p>
 
     <div class="modal-foot">
-      <span class="anon">ตอบกลับแบบไม่ระบุตัวตน</span>
+      <span class="anon">แสดงเฉพาะชื่อโปรไฟล์ผลไม้</span>
       <div class="btn-row">
         <button class="btn-sm" type="button" data-close="ov-comment">ปิด</button>
         <button class="btn-sm primary" type="button" id="cm-submit">ส่งกำลังใจ</button>
@@ -142,6 +148,6 @@
   </div>
 </div>
 
-<script type="module" src="assets/js/board.js?v=20260916.4"></script>
+<script type="module" src="assets/js/board.js?v=20260916.5"></script>
 </body>
 </html>
