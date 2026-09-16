@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://xvpyjgopvhkbraumianp.supabase.co" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/base.css">
-<link rel="stylesheet" href="assets/css/board.css?v=20260916.5">
+<link rel="stylesheet" href="assets/css/board.css?v=20260916.6">
 </head>
 <body data-page="board">
 <div class="board">
@@ -51,11 +51,6 @@
       </div>
     </section>
 
-    <p class="side-label">ช่วงเวลา</p>
-    <button class="range-btn" data-days="1" aria-pressed="true">วันนี้</button>
-    <button class="range-btn" data-days="7" aria-pressed="false">7 วันที่ผ่านมา</button>
-    <button class="range-btn" data-days="30" aria-pressed="false">30 วันที่ผ่านมา</button>
-
     <div class="helpline">
       <strong>สายด่วนสุขภาพจิต 1323</strong>
       ต้องการความช่วยเหลือเพิ่มเติม โทรได้ตลอด 24 ชั่วโมง
@@ -72,6 +67,14 @@
       <button class="feed-tab" type="button" data-view="liked" aria-pressed="false">♥ ที่ถูกใจ</button>
       <button class="feed-tab" type="button" data-view="mine" aria-pressed="false">โพสต์ของฉัน</button>
     </nav>
+    <div class="range-toolbar" role="group" aria-labelledby="range-label">
+      <span id="range-label">ช่วงเวลา</span>
+      <div class="range-options">
+        <button class="range-btn" type="button" data-days="1" aria-pressed="true">วันนี้</button>
+        <button class="range-btn" type="button" data-days="7" aria-pressed="false">7 วันที่ผ่านมา</button>
+        <button class="range-btn" type="button" data-days="30" aria-pressed="false">30 วันที่ผ่านมา</button>
+      </div>
+    </div>
     <div class="topbar" id="moods"><span class="q">อยากอ่านความรู้สึกไหน?</span></div>
     <p class="board-status" id="board-status" role="status" aria-live="polite"></p>
     <div class="grid" id="grid"></div>
