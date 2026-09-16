@@ -6,6 +6,8 @@
 <title>สมัครสมาชิก — ล้าบาย</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://xvpyjgopvhkbraumianp.supabase.co" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/auth.css">
@@ -24,9 +26,9 @@
     </header>
 
     <section data-register-step="account">
-      <div class="field"><label for="email">อีเมล</label><input id="email" type="email" autocomplete="email" placeholder="you@kkumail.com" required><p class="field-error" id="email-error"></p></div>
-      <div class="field"><label for="password">รหัสผ่าน</label><input id="password" type="password" autocomplete="new-password" minlength="8" required><p class="field-help">อย่างน้อย 8 ตัวอักษร</p><p class="field-error" id="password-error"></p></div>
-      <div class="field"><label for="password2">ยืนยันรหัสผ่าน</label><input id="password2" type="password" autocomplete="new-password" required><p class="field-error" id="password2-error"></p></div>
+      <div class="field"><label for="email">อีเมล</label><input id="email" name="email" type="email" autocomplete="email" placeholder="you@kkumail.com" required><p class="field-error" id="email-error"></p></div>
+      <div class="field"><label for="password">รหัสผ่าน</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required><p class="field-help">อย่างน้อย 8 ตัวอักษร</p><p class="field-error" id="password-error"></p></div>
+      <div class="field"><label for="password2">ยืนยันรหัสผ่าน</label><input id="password2" name="password-confirmation" type="password" autocomplete="new-password" required><p class="field-error" id="password2-error"></p></div>
       <div class="field">
         <label for="faculty">คณะหรือวิทยาลัย</label>
         <select id="faculty" required>

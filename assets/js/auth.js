@@ -228,14 +228,18 @@ if (page === "register") {
     doRegister();
   });
 } else {
-  submit.addEventListener("click", handlers[page]);
+  document.getElementById(`${page}-form`).addEventListener("submit", event => {
+    event.preventDefault();
+    handlers[page]();
+  });
 }
 
 document.querySelectorAll("input").forEach(i => {
   i.addEventListener("input", () => clearMsg("msg"));
   i.addEventListener("keydown", e => {
-    if (e.key !== "Enter") return;
-    if (page === "register" && registerStep === "account") document.getElementById("submit").click();
-    else if (handlers[page]) handlers[page]();
+    if (e.key === "Enter" && page === "register" && registerStep === "account") {
+      e.preventDefault();
+      document.getElementById("submit").click();
+    }
   });
 });

@@ -6,32 +6,34 @@
 <title>เข้าสู่ระบบ — ล้าบาย</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://xvpyjgopvhkbraumianp.supabase.co" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/auth.css">
 </head>
 <body data-page="login">
 <main class="auth-wrap">
-  <div class="auth-card">
+  <form class="auth-card" id="login-form">
     <div class="brand"><span class="brand-mark">☺</span><span class="brand-name">ล้าบาย</span></div>
 
     <div class="field">
       <label for="email">อีเมล</label>
-      <input id="email" type="email" autocomplete="email" placeholder="you@kkumail.com">
+      <input id="email" name="email" type="email" autocomplete="email" placeholder="you@kkumail.com" required>
     </div>
     <div class="field">
       <label for="password">รหัสผ่าน</label>
-      <input id="password" type="password" autocomplete="current-password">
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
     </div>
 
     <p class="msg" id="msg" role="status"></p>
 
-    <button class="btn-main" id="submit">เข้าสู่ระบบ</button>
+    <button class="btn-main" id="submit" type="submit">เข้าสู่ระบบ</button>
     <a class="btn-ghost" href="register.html" style="display:flex;align-items:center;justify-content:center;text-decoration:none">สมัครสมาชิก</a>
     <p style="text-align:center;margin:14px 0 0">
       <a class="link" href="forgot-password.html">ลืมรหัสผ่าน</a>
     </p>
-  </div>
+  </form>
 </main>
 <script type="module" src="assets/js/auth.js"></script>
 </body>

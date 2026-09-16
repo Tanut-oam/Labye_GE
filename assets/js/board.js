@@ -22,6 +22,7 @@ const profileTrigger = document.getElementById("profile-trigger");
 const profilePicker = document.getElementById("profile-picker");
 const fruitOptions = document.getElementById("fruit-options");
 let stressHistory = [];
+let stressHistoryLoaded = false;
 
 const FRUIT_PROFILES = [
   { key: "orange", emoji: "🍊", name: "ส้มใจดี" },
@@ -153,10 +154,26 @@ async function loadStressHistory() {
     return;
   }
   stressHistory = data || [];
-  const latest = stressHistory[0];
-  document.getElementById("latest-stress-level").textContent = latest ? levelOf(latest.total).label : "ยังไม่มีผลประเมิน";
-  document.getElementById("latest-stress-meta").textContent = latest ? `${latest.total} คะแนน · ${formatAssessmentDate(latest.created_at)}` : "เริ่มประเมินเพื่อเก็บเป็นจุดเริ่มต้น";
+  stressHistoryLoaded = true;
   renderStressHistory();
+}
+
+async function loadLatestStress() {
+  const { data, error } = await supabase
+    .from("stress_tests")
+    .select("total,created_at")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) {
+    console.error(error);
+    document.getElementById("latest-stress-level").textContent = "โหลดผลล่าสุดไม่สำเร็จ";
+    document.getElementById("latest-stress-meta").textContent = "เปิดประวัติเพื่อลองโหลดอีกครั้ง";
+    return;
+  }
+  document.getElementById("latest-stress-level").textContent = data ? levelOf(data.total).label : "ยังไม่มีผลประเมิน";
+  document.getElementById("latest-stress-meta").textContent = data ? `${data.total} คะแนน · ${formatAssessmentDate(data.created_at)}` : "เริ่มประเมินเพื่อเก็บเป็นจุดเริ่มต้น";
 }
 
 // ── โหลดโพสต์จากฐานข้อมูล ──────────────────────────────
@@ -165,20 +182,24 @@ async function loadPosts() {
   const sinceIso = new Date(Date.now() - days * 86400000).toISOString();
   loadFailed = false;
   try {
-    const { data, error } = await supabase
-      .from("posts")
-      .select("*")
-      .eq("hidden", false)
-      .gte("created_at", sinceIso)
-      .order("created_at", { ascending: false });
+    const [postResult, likeResult] = await Promise.all([
+      supabase
+        .from("posts")
+        .select("id,user_id,mood,body,comments_open,created_at,like_count,comment_count")
+        .eq("hidden", false)
+        .gte("created_at", sinceIso)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("likes")
+        .select("post_id")
+        .eq("user_id", user.id)
+    ]);
+    const { data, error } = postResult;
     if (error) throw error;
     posts = data || [];
 
     // ดูว่าผู้ใช้เคยกดใจโพสต์ไหนไว้บ้าง
-    const { data: likes, error: lErr } = await supabase
-      .from("likes")
-      .select("post_id")
-      .eq("user_id", user.id);
+    const { data: likes, error: lErr } = likeResult;
     if (lErr) throw lErr;
     const liked = new Set((likes || []).map(l => l.post_id));
     posts.forEach(p => { p.liked = liked.has(p.id); });
@@ -347,7 +368,7 @@ document.getElementById("open-stress-history").addEventListener("click", async e
   setSideMenu(false);
   openModal("ov-stress-history");
   document.querySelector('#ov-stress-history [data-close]').focus();
-  await loadStressHistory();
+  if (!stressHistoryLoaded) await loadStressHistory();
   event.currentTarget.dataset.opened = "true";
 });
 
@@ -359,12 +380,13 @@ requireAuth().then(u => {
   renderMoodBar();
   document.addEventListener("labye:post-created", event => showCreatedPost(event.detail));
   initPostModal(user);
-  loadStressHistory().then(() => {
-    if (location.hash === "#stress-history") {
+  loadLatestStress();
+  if (location.hash === "#stress-history") {
+    loadStressHistory().then(() => {
       openModal("ov-stress-history");
       document.querySelector('#ov-stress-history [data-close]').focus();
       history.replaceState(null, "", location.pathname + location.search);
-    }
-  });
+    });
+  }
   loadPosts();
 });
