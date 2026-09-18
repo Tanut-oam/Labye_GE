@@ -1,8 +1,8 @@
 node_modules/
 .env
 .env.local
-.firebase/
-.firebaserc
+.supabase/
+.supabase.js
 dist/
 build/
 .DS_Store
