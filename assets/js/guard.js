@@ -10,6 +10,8 @@ export async function requireAuth() {
     location.replace("index.html");
     return new Promise(() => {});
   }
+  // ยืนยันสิทธิ์ผ่านแล้ว ปลดการซ่อนเนื้อหา (ดู html.auth-gate ใน base.css)
+  document.documentElement.classList.remove("auth-gate");
   return session.user;
 }
 

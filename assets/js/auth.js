@@ -13,9 +13,22 @@ if (page === "login" || page === "register") redirectIfSignedIn();
 
 const val = id => document.getElementById(id).value.trim();
 
-// รับอีเมลที่ฟอร์แมตถูกต้องทุกโดเมน ทั้งอีเมลสากลและของมหาวิทยาลัย (เช่น @kkumail.com)
+// รับเฉพาะอีเมลที่ฟอร์แมตถูกต้อง และเป็นโดเมนยอดฮิตหรือของมหาวิทยาลัยขอนแก่น
+// กันอีเมลพิมพ์ผิด เช่น ail.com ที่หน้าตาถูกแต่ไม่มีอยู่จริง
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const isValidEmail = email => EMAIL_RE.test(email);
+const ALLOWED_DOMAINS = new Set([
+  "gmail.com", "hotmail.com", "hotmail.co.th", "outlook.com", "outlook.co.th",
+  "live.com", "yahoo.com", "yahoo.co.th", "icloud.com",
+  "kkumail.com", "kku.ac.th"
+]);
+const emailDomain = email => email.slice(email.lastIndexOf("@") + 1).toLowerCase();
+// คืนข้อความ error ถ้าอีเมลไม่ผ่าน หรือคืนค่าว่างถ้าผ่าน
+function emailError(email) {
+  if (!EMAIL_RE.test(email)) return "กรอกอีเมลให้ถูกต้อง เช่น you@gmail.com";
+  if (!ALLOWED_DOMAINS.has(emailDomain(email)))
+    return "รองรับเฉพาะ Gmail, Hotmail, Outlook, Yahoo, iCloud หรืออีเมล มข. (@kkumail.com, @kku.ac.th)";
+  return "";
+}
 
 async function doLogin() {
   const email = val("email");
@@ -60,7 +73,8 @@ function validateAccount() {
   const year = val("year");
 
   ["email", "password", "password2", "faculty", "year"].forEach(id => fieldError(id));
-  if (!isValidEmail(email)) fieldError("email", "กรอกอีเมลให้ถูกต้อง เช่น you@kkumail.com");
+  const emailErr = emailError(email);
+  if (emailErr) fieldError("email", emailErr);
   if (p1.length < 8) fieldError("password", "รหัสผ่านต้องยาวอย่างน้อย 8 ตัวอักษร");
   if (!p2) fieldError("password2", "กรอกยืนยันรหัสผ่าน");
   else if (p1 !== p2) fieldError("password2", "รหัสผ่านทั้งสองช่องไม่ตรงกัน");
@@ -190,8 +204,9 @@ async function doRegister() {
 async function doReset() {
   const email = val("email");
   fieldError("email");
-  if (!isValidEmail(email)) {
-    fieldError("email", "กรอกอีเมลให้ถูกต้อง เช่น you@kkumail.com");
+  const emailErr = emailError(email);
+  if (emailErr) {
+    fieldError("email", emailErr);
     return setMsg("msg", "ตรวจสอบอีเมลอีกครั้ง");
   }
 

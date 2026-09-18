@@ -100,6 +100,10 @@ input,textarea,select{ font-family:inherit }
 [hidden]{ display:none !important }
 body.modal-open{ overflow:hidden }
 
+/* หน้าที่ต้องล็อกอิน ซ่อนเนื้อหาไว้ก่อนจนกว่า requireAuth() จะยืนยันสิทธิ์เสร็จ
+   กันไม่ให้เนื้อหาแว่บให้เห็นตอนเปิดลิงก์ตรง ๆ โดยยังไม่ล็อกอิน (guard.js เป็นคนปลดออก) */
+html.auth-gate body{ visibility:hidden }
+
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{ scroll-behavior:auto !important; transition-duration:.01ms !important; animation-duration:.01ms !important; animation-iteration-count:1 !important }
 }
