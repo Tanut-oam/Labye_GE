@@ -13,6 +13,10 @@ if (page === "login" || page === "register") redirectIfSignedIn();
 
 const val = id => document.getElementById(id).value.trim();
 
+// รับอีเมลที่ฟอร์แมตถูกต้องทุกโดเมน ทั้งอีเมลสากลและของมหาวิทยาลัย (เช่น @kkumail.com)
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const isValidEmail = email => EMAIL_RE.test(email);
+
 async function doLogin() {
   const email = val("email");
   const password = document.getElementById("password").value;
@@ -56,7 +60,7 @@ function validateAccount() {
   const year = val("year");
 
   ["email", "password", "password2", "faculty", "year"].forEach(id => fieldError(id));
-  if (!email || !email.includes("@")) fieldError("email", "กรอกอีเมลให้ถูกต้อง");
+  if (!isValidEmail(email)) fieldError("email", "กรอกอีเมลให้ถูกต้อง เช่น you@kkumail.com");
   if (p1.length < 8) fieldError("password", "รหัสผ่านต้องยาวอย่างน้อย 8 ตัวอักษร");
   if (!p2) fieldError("password2", "กรอกยืนยันรหัสผ่าน");
   else if (p1 !== p2) fieldError("password2", "รหัสผ่านทั้งสองช่องไม่ตรงกัน");
@@ -185,21 +189,76 @@ async function doRegister() {
 
 async function doReset() {
   const email = val("email");
-  if (!email) return setMsg("msg", "กรอกอีเมลก่อน");
+  fieldError("email");
+  if (!isValidEmail(email)) {
+    fieldError("email", "กรอกอีเมลให้ถูกต้อง เช่น you@kkumail.com");
+    return setMsg("msg", "ตรวจสอบอีเมลอีกครั้ง");
+  }
 
   submit.disabled = true;
-  const redirectTo = location.origin + location.pathname.replace(/forgot-password\.html$/, "index.html");
+  // กดลิงก์ในอีเมลแล้วกลับมาที่หน้านี้ ระบบจะสลับไปช่องตั้งรหัสใหม่ให้เอง
+  const redirectTo = location.origin + location.pathname;
   const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
   if (error) {
     setMsg("msg", authError(error));
     submit.disabled = false;
     return;
   }
-  setMsg("msg", "ส่งลิงก์ตั้งรหัสผ่านไปที่อีเมลแล้ว ลองเช็กกล่องจดหมาย", true);
+  setMsg("msg", "ส่งลิงก์ตั้งรหัสผ่านไปที่อีเมลแล้ว เปิดลิงก์ในอีเมลเพื่อตั้งรหัสใหม่", true);
 }
 
-const handlers = { login: doLogin, forgot: doReset };
-if (page === "register") {
+// สลับระหว่างขั้นขอลิงก์กับขั้นตั้งรหัสใหม่ ในหน้าลืมรหัสผ่าน
+function showForgotStep(step) {
+  document.querySelectorAll("[data-forgot-step]").forEach(section => {
+    section.hidden = section.dataset.forgotStep !== step;
+  });
+  clearMsg("msg");
+}
+
+// ตั้งรหัสผ่านใหม่หลังกดลิงก์จากอีเมล (มี session ชั่วคราวแบบ recovery อยู่แล้ว)
+async function doSetNewPassword() {
+  const p1 = document.getElementById("new-password").value;
+  const p2 = document.getElementById("new-password2").value;
+
+  ["new-password", "new-password2"].forEach(id => fieldError(id));
+  if (p1.length < 8) fieldError("new-password", "รหัสผ่านต้องยาวอย่างน้อย 8 ตัวอักษร");
+  else if (p1 !== p2) fieldError("new-password2", "รหัสผ่านทั้งสองช่องไม่ตรงกัน");
+
+  const firstInvalid = document.querySelector('[aria-invalid="true"]');
+  if (firstInvalid) {
+    setMsg("msg", "ตรวจสอบรหัสผ่านอีกครั้ง");
+    firstInvalid.focus();
+    return;
+  }
+
+  const setBtn = document.getElementById("set-submit");
+  setBtn.disabled = true;
+  setMsg("msg", "กำลังบันทึกรหัสผ่านใหม่…", true);
+  const { error } = await supabase.auth.updateUser({ password: p1 });
+  if (error) {
+    setMsg("msg", authError(error));
+    setBtn.disabled = false;
+    return;
+  }
+  setMsg("msg", "ตั้งรหัสผ่านใหม่เรียบร้อย กำลังพาไปหน้ากระดาน…", true);
+  setTimeout(() => { location.href = "board.html"; }, 1200);
+}
+
+if (page === "forgot") {
+  // ถ้าเปิดหน้ามาจากลิงก์รีเซ็ตในอีเมล supabase จะยิง event PASSWORD_RECOVERY
+  supabase.auth.onAuthStateChange(event => {
+    if (event === "PASSWORD_RECOVERY") {
+      showForgotStep("set");
+      document.getElementById("new-password").focus();
+    }
+  });
+  document.getElementById("forgot-form").addEventListener("submit", event => {
+    event.preventDefault();
+    const setStep = document.querySelector('[data-forgot-step="set"]');
+    if (setStep && !setStep.hidden) doSetNewPassword();
+    else doReset();
+  });
+} else if (page === "register") {
   document.getElementById("submit").addEventListener("click", () => {
     if (!validateAccount()) return;
     showRegisterStep("assessment");
@@ -228,9 +287,10 @@ if (page === "register") {
     doRegister();
   });
 } else {
-  document.getElementById(`${page}-form`).addEventListener("submit", event => {
+  // หน้าเข้าสู่ระบบ
+  document.getElementById("login-form").addEventListener("submit", event => {
     event.preventDefault();
-    handlers[page]();
+    doLogin();
   });
 }
 
