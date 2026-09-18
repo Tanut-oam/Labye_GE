@@ -20,6 +20,12 @@
   --mood-sad:#E6F1FB;     --mood-sad-ink:#185FA5;
   --mood-anx:#EEEDFE;     --mood-anx-ink:#534AB7;
   --mood-calm:#E1F5EE;    --mood-calm-ink:#0F6E56;
+
+  /* ก้อนแสงพื้นหลังผ่อนคลาย ใช้ในหน้าแบบวัดและแบบประเมิน */
+  --calm-orb-1:#7CD3B6;
+  --calm-orb-2:#C7EFDF;
+  --calm-orb-3:#FAD79A;
+  --calm-orb-4:#A7C8F0;
 }
 
 *{ box-sizing:border-box }
